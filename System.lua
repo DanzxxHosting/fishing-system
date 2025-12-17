@@ -1,15 +1,16 @@
--- 🎣 FISH IT! HACK SYSTEM - Client Side
--- fishing_hack_system.lua - Place in StarterPlayerScripts
+-- 🎣 FISH IT! HACK INJECTOR - AGGRESSIVE VERSION
+-- fishing_hack_injector.lua - Place in StarterPlayerScripts
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local MarketplaceService = game:GetService("MarketplaceService")
 
 local player = Players.LocalPlayer
 local fishingRemote = ReplicatedStorage:WaitForChild("FishingHack")
 
--- Fishing hack settings
+-- Fishing settings from UI
 local fishingSettings = {
     AutoFish = false,
     BlantantFish = false,
@@ -19,287 +20,457 @@ local fishingSettings = {
 }
 
 -- State variables
-local isFishingActive = false
+local isSystemActive = false
+local originalFunctions = {}
+local hookedRemotes = {}
+local fishingModules = {}
+
+-- AGGRESSIVE FISHING DETECTION
+local function detectFishingGame()
+    print("🔍 Mencari sistem fishing game...")
+    
+    local detectedSystems = {}
+    
+    -- 1. Cari semua ModuleScript yang berhubungan dengan fishing
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj:IsA("ModuleScript") then
+            local name = obj.Name:lower()
+            if name:find("fish") or name:find("rod") or name:find("catch") or 
+               name:find("bait") or name:find("hook") or name:find("reel") then
+                table.insert(detectedSystems, {type = "Module", obj = obj})
+                print("📦 Found module:", obj:GetFullName())
+            end
+        end
+        
+        -- 2. Cari semua RemoteEvent/Function
+        if obj:IsA("RemoteEvent") or obj:IsA("RemoteFunction") then
+            local name = obj.Name:lower()
+            if name:find("fish") or name:find("cast") or name:find("catch") or 
+               name:find("reel") or name:find("rod") then
+                table.insert(detectedSystems, {type = "Remote", obj = obj})
+                print("📡 Found remote:", obj:GetFullName())
+            end
+        end
+        
+        -- 3. Cari semua Script fishing
+        if obj:IsA("Script") or obj:IsA("LocalScript") then
+            local name = obj.Name:lower()
+            if name:find("fish") or name:find("rod") then
+                table.insert(detectedSystems, {type = "Script", obj = obj})
+                print("📝 Found script:", obj:GetFullName())
+            end
+        end
+    end
+    
+    return detectedSystems
+end
+
+-- HOOK ALL FISHING MODULES AGGRESSIVELY
+local function hookFishingModules()
+    print("🎣 Meng-hook semua module fishing...")
+    
+    local allModules = {}
+    
+    -- Collect all modules
+    for _, obj in pairs(game:GetDescendants()) do
+        if obj:IsA("ModuleScript") then
+            local success, module = pcall(function()
+                return require(obj)
+            end)
+            
+            if success and type(module) == "table" then
+                allModules[obj] = module
+                
+                -- Check if this is a fishing module
+                local hasFishingFunctions = false
+                for key, value in pairs(module) do
+                    if type(key) == "string" then
+                        if key:lower():find("fish") or key:lower():find("catch") or 
+                           key:lower():find("cast") or key:lower():find("reel") then
+                            hasFishingFunctions = true
+                            break
+                        end
+                    end
+                end
+                
+                if hasFishingFunctions then
+                    fishingModules[obj] = module
+                    print("✅ Fishing module found:", obj.Name)
+                end
+            end
+        end
+    end
+    
+    return fishingModules
+end
+
+-- MODIFY FISHING MODULE VALUES
+local function modifyFishingModules()
+    print("⚡ Memodifikasi fishing modules...")
+    
+    for moduleScript, module in pairs(fishingModules) do
+        print("🔧 Modifying module:", moduleScript.Name)
+        
+        -- Save original module
+        originalFunctions[moduleScript] = table.clone(module)
+        
+        -- Apply Instant Fishing modifications
+        if fishingSettings.InstantFish then
+            if module.CatchTime then module.CatchTime = 0.1 end
+            if module.WaitTime then module.WaitTime = 0.1 end
+            if module.CastTime then module.CastTime = 0.1 end
+            if module.ReelTime then module.ReelTime = 0.1 end
+            if module.Delay then module.Delay = 0.1 end
+            
+            -- Set success rates to 100%
+            if module.SuccessRate then module.SuccessRate = 100 end
+            if module.CatchChance then module.CatchChance = 100 end
+            if module.SuccessChance then module.SuccessChance = 100 end
+            
+            print("🚀 Applied Instant Fishing to module")
+        end
+        
+        -- Apply Blatant Fishing modifications
+        if fishingSettings.BlantantFish then
+            if module.MaxDistance then module.MaxDistance = 9999 end
+            if module.Range then module.Range = 9999 end
+            if module.Distance then module.Distance = 9999 end
+            if module.LineLength then module.LineLength = 9999 end
+            
+            print("⚡ Applied Blatant Fishing to module")
+        end
+        
+        -- Create new require hook
+        local originalRequire = require
+        local function newRequire(script)
+            if script == moduleScript then
+                return module
+            end
+            return originalRequire(script)
+        end
+        
+        -- Replace require function
+        getfenv(0).require = newRequire
+        
+        print("✅ Module modified successfully:", moduleScript.Name)
+    end
+end
+
+-- HOOK ALL FISHING REMOTES AGGRESSIVELY
+local function hookAllFishingRemotes()
+    print("🔗 Meng-hook semua remote fishing...")
+    
+    local remotesFound = 0
+    
+    for _, remote in pairs(game:GetDescendants()) do
+        if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
+            local remoteName = remote.Name:lower()
+            
+            -- Hook jika namanya berhubungan dengan fishing
+            if remoteName:find("fish") or remoteName:find("cast") or 
+               remoteName:find("catch") or remoteName:find("reel") or
+               remoteName:find("rod") or remoteName:find("bait") then
+                
+                remotesFound = remotesFound + 1
+                
+                if remote:IsA("RemoteEvent") then
+                    -- Hook RemoteEvent
+                    local originalFire = remote.FireServer
+                    remote.FireServer = function(self, ...)
+                        local args = {...}
+                        local eventName = tostring(args[1] or "")
+                        
+                        print("🎣 Fishing Event Fired:", eventName)
+                        
+                        -- Apply Instant Fishing
+                        if fishingSettings.InstantFish then
+                            if eventName:lower():find("fish") or eventName:lower():find("catch") then
+                                print("🚀 Instant Fishing applied to event")
+                                -- Modify wait times in arguments
+                                for i, arg in ipairs(args) do
+                                    if type(arg) == "table" then
+                                        arg.waitTime = 0.1
+                                        arg.WaitTime = 0.1
+                                        arg.delay = 0.1
+                                        arg.Delay = 0.1
+                                    end
+                                end
+                            end
+                        end
+                        
+                        return originalFire(self, unpack(args))
+                    end
+                    
+                elseif remote:IsA("RemoteFunction") then
+                    -- Hook RemoteFunction
+                    local originalInvoke = remote.InvokeServer
+                    remote.InvokeServer = function(self, ...)
+                        local args = {...}
+                        local eventName = tostring(args[1] or "")
+                        
+                        print("🎣 Fishing Function Invoked:", eventName)
+                        
+                        -- Apply Instant Fishing
+                        if fishingSettings.InstantFish then
+                            if eventName:lower():find("fish") or eventName:lower():find("catch") then
+                                print("🚀 Instant Fishing applied to function")
+                                -- Modify wait times in arguments
+                                for i, arg in ipairs(args) do
+                                    if type(arg) == "table" then
+                                        arg.waitTime = 0.1
+                                        arg.WaitTime = 0.1
+                                        arg.delay = 0.1
+                                        arg.Delay = 0.1
+                                    end
+                                end
+                            end
+                        end
+                        
+                        return originalInvoke(self, unpack(args))
+                    end
+                end
+                
+                hookedRemotes[remote] = true
+                print("✅ Hooked remote:", remote:GetFullName())
+            end
+        end
+    end
+    
+    print("📊 Total remotes hooked:", remotesFound)
+    return remotesFound > 0
+end
+
+-- AUTO FISHING SYSTEM
 local autoFishingConnection = nil
 local lastCatchTime = 0
-local originalAnimations = {}
 
--- Find fishing tools
-local function findFishingRod()
-    local character = player.Character
-    if not character then return nil end
-    
-    -- Check equipped tool
-    for _, tool in pairs(character:GetChildren()) do
-        if tool:IsA("Tool") then
-            local name = tool.Name:lower()
-            if name:find("rod") or name:find("fish") or name:find("pancing") then
-                return tool
-            end
-        end
-    end
-    
-    -- Check backpack
-    local backpack = player:FindFirstChild("Backpack")
-    if backpack then
-        for _, tool in pairs(backpack:GetChildren()) do
-            if tool:IsA("Tool") then
-                local name = tool.Name:lower()
-                if name:find("rod") or name:find("fish") or name:find("pancing") then
-                    return tool
-                end
-            end
-        end
-    end
-    
-    return nil
-end
-
--- Find fish in workspace
-local function findFish()
-    local fishList = {}
-    
-    for _, obj in pairs(Workspace:GetDescendants()) do
-        if obj:IsA("BasePart") or obj:IsA("MeshPart") then
-            local name = obj.Name:lower()
-            if name:find("fish") or name:find("ikan") or 
-               name:find("salmon") or name:find("tuna") or
-               name:find("cod") or name:find("bass") then
-                table.insert(fishList, obj)
-            end
-        end
-    end
-    
-    return fishList
-end
-
--- Hook into fishing events
-local function hookFishingEvents()
-    -- Look for fishing remote events
-    local fishingRemotes = {}
-    
-    for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
-        if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
-            local name = remote.Name:lower()
-            if name:find("fish") or name:find("cast") or name:find("catch") or name:find("reel") then
-                table.insert(fishingRemotes, remote)
-            end
-        end
-    end
-    
-    return fishingRemotes
-end
-
--- No Animation Feature: Pancingan diam tapi jalan
-local function applyNoAnimation()
-    if not fishingSettings.NoAnimation then
-        -- Restore original animations if they were saved
-        for animTrack, originalSpeed in pairs(originalAnimations) do
-            if animTrack and animTrack.Parent then
-                animTrack:AdjustSpeed(originalSpeed)
-            end
-        end
-        originalAnimations = {}
-        return
-    end
-    
-    local character = player.Character
-    if not character then return end
-    
-    local humanoid = character:FindFirstChild("Humanoid")
-    if not humanoid then return end
-    
-    -- Stop all fishing animations
-    for _, animTrack in pairs(humanoid:GetPlayingAnimationTracks()) do
-        if animTrack.Name:lower():find("fish") or 
-           animTrack.Name:lower():find("cast") or 
-           animTrack.Name:lower():find("reel") then
-            -- Save original speed
-            if not originalAnimations[animTrack] then
-                originalAnimations[animTrack] = animTrack.Speed
-            end
-            -- Set speed to 0 (diam)
-            animTrack:AdjustSpeed(0)
-        end
-    end
-    
-    -- Also try to find and stop tool animations
-    local fishingRod = findFishingRod()
-    if fishingRod then
-        for _, animator in pairs(fishingRod:GetDescendants()) do
-            if animator:IsA("Animator") then
-                for _, animTrack in pairs(animator:GetPlayingAnimationTracks()) do
-                    if animTrack.Name:lower():find("fish") then
-                        if not originalAnimations[animTrack] then
-                            originalAnimations[animTrack] = animTrack.Speed
-                        end
-                        animTrack:AdjustSpeed(0)
-                    end
-                end
-            end
-        end
-    end
-end
-
--- Instant Fishing Feature
-local function applyInstantFishing(fishingRemotes)
-    if not fishingSettings.InstantFish then return end
-    
-    for _, remote in pairs(fishingRemotes) do
-        if remote:IsA("RemoteEvent") then
-            -- Hook the remote event to modify timing
-            local originalFireServer = remote.FireServer
-            remote.FireServer = function(self, ...)
-                local args = {...}
-                
-                -- Check if this is a fishing-related event
-                local eventName = tostring(args[1] or "")
-                local isFishingEvent = eventName:lower():find("fish") or 
-                                      eventName:lower():find("cast") or 
-                                      eventName:lower():find("catch")
-                
-                if isFishingEvent then
-                    -- Modify wait times if they exist in the arguments
-                    for i, arg in ipairs(args) do
-                        if type(arg) == "table" then
-                            if arg.waitTime or arg.WaitTime then
-                                arg.waitTime = 0.1
-                                arg.WaitTime = 0.1
-                            end
-                            if arg.delay or arg.Delay then
-                                arg.delay = 0.1
-                                arg.Delay = 0.1
-                            end
-                        end
-                    end
-                end
-                
-                return originalFireServer(self, unpack(args))
-            end
-        end
-    end
-end
-
--- Blatant Fishing Feature: Tangkap melalui rintangan
-local function canCatchFish(fishPart)
-    if not fishPart then return false end
-    
-    if fishingSettings.BlantantFish then
-        return true -- Bisa tangkap melalui apapun
-    end
-    
-    -- Normal fishing: Check distance and line of sight
-    local character = player.Character
-    if not character then return false end
-    
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then return false end
-    
-    local distance = (humanoidRootPart.Position - fishPart.Position).Magnitude
-    
-    -- Max distance for normal fishing
-    if distance > 50 then
-        return false
-    end
-    
-    -- Check line of sight (simple raycast)
-    local rayOrigin = humanoidRootPart.Position
-    local rayDirection = (fishPart.Position - rayOrigin).Unit
-    local raycastParams = RaycastParams.new()
-    raycastParams.FilterDescendantsInstances = {character, fishPart}
-    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-    
-    local rayResult = Workspace:Raycast(rayOrigin, rayDirection * distance, raycastParams)
-    
-    if rayResult then
-        -- Something is blocking the line of sight
-        return false
-    end
-    
-    return true
-end
-
--- Auto Fishing Feature
 local function startAutoFishing()
     if autoFishingConnection then
         autoFishingConnection:Disconnect()
         autoFishingConnection = nil
     end
     
-    if not fishingSettings.AutoFish then return end
+    if not fishingSettings.AutoFish then
+        print("🤖 Auto Fishing: OFF")
+        return
+    end
+    
+    print("🤖 Auto Fishing: ON")
     
     autoFishingConnection = RunService.Heartbeat:Connect(function(deltaTime)
-        -- Check cooldown
+        -- Check catch delay
         if tick() - lastCatchTime < fishingSettings.CatchDelay then
             return
         end
         
-        -- Find fishing rod
-        local fishingRod = findFishingRod()
-        if not fishingRod then return end
-        
-        -- Find fish
-        local fishList = findFish()
-        if #fishList == 0 then return end
-        
-        -- Find closest fish that can be caught
+        -- Find fishing rod in character
         local character = player.Character
         if not character then return end
         
-        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-        if not humanoidRootPart then return end
+        local fishingRod = nil
         
-        local closestFish = nil
-        local closestDistance = math.huge
-        
-        for _, fish in pairs(fishList) do
-            if canCatchFish(fish) then
-                local distance = (humanoidRootPart.Position - fish.Position).Magnitude
-                if distance < closestDistance then
-                    closestDistance = distance
-                    closestFish = fish
+        -- Check equipped tools
+        for _, tool in pairs(character:GetChildren()) do
+            if tool:IsA("Tool") then
+                local name = tool.Name:lower()
+                if name:find("rod") or name:find("fish") or name:find("pancing") then
+                    fishingRod = tool
+                    break
                 end
             end
         end
         
-        if closestFish then
-            -- Try to catch the fish
-            local fishingRemotes = hookFishingEvents()
-            
-            for _, remote in pairs(fishingRemotes) do
-                pcall(function()
-                    if remote:IsA("RemoteEvent") then
-                        remote:FireServer("CatchFish", {
-                            fish = closestFish,
-                            position = closestFish.Position,
-                            instant = fishingSettings.InstantFish
-                        })
-                    elseif remote:IsA("RemoteFunction") then
-                        remote:InvokeServer("CatchFish", {
-                            fish = closestFish,
-                            position = closestFish.Position,
-                            instant = fishingSettings.InstantFish
-                        })
+        -- Check backpack if not equipped
+        if not fishingRod then
+            local backpack = player:FindFirstChild("Backpack")
+            if backpack then
+                for _, tool in pairs(backpack:GetChildren()) do
+                    if tool:IsA("Tool") then
+                        local name = tool.Name:lower()
+                        if name:find("rod") or name:find("fish") or name:find("pancing") then
+                            fishingRod = tool
+                            -- Auto equip
+                            tool.Parent = character
+                            task.wait(0.5)
+                            break
+                        end
                     end
-                end)
+                end
             end
-            
-            lastCatchTime = tick()
-            
-            -- Apply no animation if enabled
-            if fishingSettings.NoAnimation then
-                applyNoAnimation()
+        end
+        
+        if not fishingRod then
+            print("❌ No fishing rod found")
+            return
+        end
+        
+        -- AGGRESSIVE FISH FINDING
+        local fishFound = false
+        
+        -- Method 1: Look for fish parts
+        for _, obj in pairs(Workspace:GetDescendants()) do
+            if obj:IsA("BasePart") or obj:IsA("MeshPart") then
+                local name = obj.Name:lower()
+                
+                if name:find("fish") or name:find("ikan") or 
+                   name:find("salmon") or name:find("tuna") or
+                   name:find("trout") or name:find("bass") or
+                   name:find("cod") or name:find("mackerel") then
+                    
+                    fishFound = true
+                    
+                    -- Check if we can catch it
+                    local canCatch = false
+                    if fishingSettings.BlantantFish then
+                        canCatch = true
+                    else
+                        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+                        if humanoidRootPart then
+                            local distance = (humanoidRootPart.Position - obj.Position).Magnitude
+                            if distance < 50 then
+                                canCatch = true
+                            end
+                        end
+                    end
+                    
+                    if canCatch then
+                        -- Try to fire all fishing remotes
+                        for remote, _ in pairs(hookedRemotes) do
+                            pcall(function()
+                                if remote:IsA("RemoteEvent") then
+                                    remote:FireServer("CatchFish", {
+                                        Fish = obj,
+                                        Position = obj.Position,
+                                        Instant = fishingSettings.InstantFish
+                                    })
+                                    print("🎣 Attempted catch via:", remote.Name)
+                                elseif remote:IsA("RemoteFunction") then
+                                    remote:InvokeServer("CatchFish", {
+                                        Fish = obj,
+                                        Position = obj.Position,
+                                        Instant = fishingSettings.InstantFish
+                                    })
+                                    print("🎣 Attempted catch via:", remote.Name)
+                                end
+                            end)
+                        end
+                        
+                        -- Also try common fishing events
+                        local commonEvents = {
+                            "FishCaught", "CatchFish", "ReelFish", "CastLine",
+                            "StartFishing", "FishBite", "PullFish"
+                        }
+                        
+                        for _, eventName in pairs(commonEvents) do
+                            pcall(function()
+                                -- Fire to all hooked remotes
+                                for remote, _ in pairs(hookedRemotes) do
+                                    if remote:IsA("RemoteEvent") then
+                                        remote:FireServer(eventName, {
+                                            Target = obj,
+                                            Location = obj.Position
+                                        })
+                                    end
+                                end
+                            end)
+                        end
+                        
+                        lastCatchTime = tick()
+                        print("✅ Fish caught:", obj.Name)
+                        break
+                    end
+                end
+            end
+        end
+        
+        -- Method 2: Look for fishing zones/areas
+        if not fishFound then
+            for _, obj in pairs(Workspace:GetChildren()) do
+                if obj.Name:lower():find("pond") or obj.Name:lower():find("lake") or
+                   obj.Name:lower():find("river") or obj.Name:lower():find("ocean") or
+                   obj.Name:lower():find("water") then
+                    
+                    -- Cast fishing line into water
+                    for remote, _ in pairs(hookedRemotes) do
+                        pcall(function()
+                            if remote:IsA("RemoteEvent") then
+                                remote:FireServer("CastLine", {
+                                    Location = obj.Position,
+                                    Instant = true
+                                })
+                                print("🎣 Casting line into:", obj.Name)
+                            end
+                        end)
+                    end
+                    
+                    lastCatchTime = tick()
+                    break
+                end
             end
         end
     end)
 end
 
--- Main system update
+-- NO ANIMATION SYSTEM
+local function applyNoAnimation()
+    if not fishingSettings.NoAnimation then
+        print("🎬 No Animation: OFF")
+        return
+    end
+    
+    print("🎬 No Animation: ON - Pancingan diam tapi jalan")
+    
+    local character = player.Character
+    if not character then return end
+    
+    local humanoid = character:FindFirstChild("Humanoid")
+    if humanoid then
+        -- Stop all animations
+        for _, animTrack in pairs(humanoid:GetPlayingAnimationTracks()) do
+            animTrack:Stop()
+        end
+    end
+    
+    -- Also look for fishing rod animations
+    for _, tool in pairs(character:GetChildren()) do
+        if tool:IsA("Tool") then
+            for _, descendant in pairs(tool:GetDescendants()) do
+                if descendant:IsA("Animation") then
+                    local animator = descendant:FindFirstAncestorOfClass("Animator")
+                    if animator then
+                        for _, animTrack in pairs(animator:GetPlayingAnimationTracks()) do
+                            animTrack:Stop()
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- MAIN SYSTEM UPDATE
 local function updateFishingSystem()
-    -- Start/stop auto fishing
-    if fishingSettings.AutoFish and not autoFishingConnection then
+    print("🔄 Updating fishing system...")
+    
+    -- Detect fishing game
+    local detectedSystems = detectFishingGame()
+    if #detectedSystems == 0 then
+        print("⚠️ No fishing systems detected! Using aggressive mode")
+    else
+        print("✅ Found", #detectedSystems, "fishing systems")
+    end
+    
+    -- Hook modules
+    hookFishingModules()
+    modifyFishingModules()
+    
+    -- Hook remotes
+    local hasRemotes = hookAllFishingRemotes()
+    
+    -- Start/Stop auto fishing
+    if fishingSettings.AutoFish then
         startAutoFishing()
-    elseif not fishingSettings.AutoFish and autoFishingConnection then
+    elseif autoFishingConnection then
         autoFishingConnection:Disconnect()
         autoFishingConnection = nil
     end
@@ -307,83 +478,90 @@ local function updateFishingSystem()
     -- Apply no animation
     applyNoAnimation()
     
-    -- Apply instant fishing
+    -- Apply instant fishing globally
     if fishingSettings.InstantFish then
-        local fishingRemotes = hookFishingEvents()
-        applyInstantFishing(fishingRemotes)
+        print("🚀 Instant Fishing aktif - Semua delay diubah ke 0.1s")
+        
+        -- Global wait time modification
+        local originalWait = task.wait
+        task.wait = function(seconds)
+            if seconds and seconds > 0.1 then
+                seconds = 0.1
+            end
+            return originalWait(seconds)
+        end
     end
+    
+    isSystemActive = true
+    print("✅ Fishing hack system aktif!")
 end
 
--- Listen for settings updates from UI
+-- Listen for settings from UI
 fishingRemote.OnClientEvent:Connect(function(action, data)
     if action == "FeatureToggled" then
-        -- Update specific feature
+        -- Update settings
         local featureName = data.Feature
         local enabled = data.Enabled
         
         if featureName == "AUTO FISHING" then
             fishingSettings.AutoFish = enabled
+            print("🤖 Auto Fishing:", enabled and "ON" or "OFF")
         elseif featureName == "BLATANT FISHING" then
             fishingSettings.BlantantFish = enabled
+            print("⚡ Blatant Fishing:", enabled and "ON" or "OFF")
         elseif featureName == "INSTANT FISHING" then
             fishingSettings.InstantFish = enabled
+            print("🚀 Instant Fishing:", enabled and "ON" or "OFF")
         elseif featureName == "NO ANIMATION" then
             fishingSettings.NoAnimation = enabled
+            print("🎬 No Animation:", enabled and "ON" or "OFF")
         end
         
-        -- Update all settings if provided
-        if data.Settings then
-            for setting, value in pairs(data.Settings) do
-                fishingSettings[setting] = value
-            end
-        end
-        
-        -- Update the fishing system
+        -- Update system
         updateFishingSystem()
         
-        print("🎣 " .. featureName .. " " .. (enabled and "diaktifkan" or "dinonaktifkan"))
-        
     elseif action == "UpdateSettings" then
-        -- Update catch delay
         if data.CatchDelay then
             fishingSettings.CatchDelay = data.CatchDelay
+            print("⏱️ Catch delay updated:", fishingSettings.CatchDelay)
         end
     end
 end)
 
--- Monitor character changes
-player.CharacterAdded:Connect(function(character)
-    task.wait(1) -- Wait for character to load
-    
-    -- Reapply no animation if enabled
-    if fishingSettings.NoAnimation then
-        applyNoAnimation()
-    end
-end)
+-- Auto-detect and inject on game load
+task.wait(3) -- Wait for game to fully load
 
--- Start monitoring for fishing tools
-local function monitorFishingTools()
+print("🎣 Fish It! Hack Injector dimuat!")
+print("🔧 Meng-inject fishing hacks...")
+
+-- Initial detection and injection
+updateFishingSystem()
+
+-- Monitor for new fishing systems
+task.spawn(function()
     while true do
-        task.wait(2)
+        task.wait(10)
         
-        -- Check if we have a fishing rod
-        local fishingRod = findFishingRod()
-        if fishingRod then
-            -- Apply no animation to the rod if enabled
+        if isSystemActive then
+            -- Check if we need to re-hook new systems
+            local newRemotes = 0
+            for _, remote in pairs(game:GetDescendants()) do
+                if (remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction")) and not hookedRemotes[remote] then
+                    local name = remote.Name:lower()
+                    if name:find("fish") or name:find("cast") or name:find("catch") then
+                        hookAllFishingRemotes()
+                        print("🔄 Re-hooked new fishing remotes")
+                        break
+                    end
+                end
+            end
+            
+            -- Re-apply no animation
             if fishingSettings.NoAnimation then
                 applyNoAnimation()
             end
         end
     end
-end
+end)
 
--- Start the system
-task.spawn(monitorFishingTools)
-updateFishingSystem()
-
-print("🎣 Fishing Hack System dimuat!")
-print("🤖 Auto Fishing: " .. tostring(fishingSettings.AutoFish))
-print("⚡ Blatant Fishing: " .. tostring(fishingSettings.BlantantFish))
-print("🚀 Instant Fishing: " .. tostring(fishingSettings.InstantFish))
-print("🎬 No Animation: " .. tostring(fishingSettings.NoAnimation))
-print("⏱️ Catch Delay: " .. fishingSettings.CatchDelay .. "s")
+print("✅ System ready! Waiting for UI commands...")
