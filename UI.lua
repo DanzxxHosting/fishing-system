@@ -43,6 +43,17 @@ local fishingActive = false
 local fishingConnection
 local reelConnection
 
+-- PERUBAHAN: Remote fishing yang ditemukan di console
+local fishingRemotes = {
+    FlyFishingEffect = nil,
+    FishCaught = nil,
+    ObtainedNewFishNotification = nil,
+    FishingStopped = nil,
+    FishingCompleted = nil,
+    FishingMinigameChanged = nil,
+    CaughtFishVisual = nil
+}
+
 -- Cleanup old UI
 if playerGui:FindFirstChild("NeonDashboardUI") then
     playerGui.NeonDashboardUI:Destroy()
@@ -144,11 +155,10 @@ title.TextColor3 = Color3.fromRGB(255, 220, 220)
 title.TextXAlignment = Enum.TextXAlignment.Left
 title.Parent = titleBar
 
--- ========== PERUBAHAN DI SINI ==========
--- Window Controls (diperbarui untuk menambah maximize)
+-- Window Controls
 local windowControls = Instance.new("Frame")
-windowControls.Size = UDim2.new(0, 120, 1, 0) -- Diperbesar dari 80 ke 120
-windowControls.Position = UDim2.new(1, -125, 0, 0) -- Diperbarui posisi
+windowControls.Size = UDim2.new(0, 120, 1, 0)
+windowControls.Position = UDim2.new(1, -125, 0, 0)
 windowControls.BackgroundTransparency = 1
 windowControls.Parent = titleBar
 
@@ -169,7 +179,7 @@ local minCorner = Instance.new("UICorner")
 minCorner.CornerRadius = UDim.new(0, 6)
 minCorner.Parent = minimizeBtn
 
--- Tombol Maximize (□) - BARU DITAMBAHKAN
+-- Tombol Maximize (□)
 local maximizeBtn = Instance.new("TextButton")
 maximizeBtn.Name = "MaximizeBtn"
 maximizeBtn.Size = UDim2.new(0, 32, 0, 32)
@@ -190,7 +200,7 @@ maxCorner.Parent = maximizeBtn
 local closeBtn = Instance.new("TextButton")
 closeBtn.Name = "CloseBtn"
 closeBtn.Size = UDim2.new(0, 32, 0, 32)
-closeBtn.Position = UDim2.new(0, 80, 0.5, -16) -- Diperbarui dari 40 ke 80
+closeBtn.Position = UDim2.new(0, 80, 0.5, -16)
 closeBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
 closeBtn.Font = Enum.Font.GothamBold
 closeBtn.TextSize = 14
@@ -202,7 +212,6 @@ closeBtn.Parent = windowControls
 local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(0, 6)
 closeCorner.Parent = closeBtn
--- ========================================
 
 local memLabel = Instance.new("TextLabel")
 memLabel.Size = UDim2.new(0.4,-100,1,0)
@@ -352,10 +361,81 @@ cTitle.TextColor3 = Color3.fromRGB(245,245,245)
 cTitle.TextXAlignment = Enum.TextXAlignment.Left
 cTitle.Parent = content
 
--- ... (sisanya sama seperti kode Anda yang original untuk fishing functions)
 -- ═══════════════════════════════════════════════════════════
--- ENHANCED INSTANT FISHING FUNCTIONS
+-- PERUBAHAN BESAR: ENHANCED INSTANT FISHING FUNCTIONS BERDASARKAN CONSOLE
 -- ═══════════════════════════════════════════════════════════
+
+-- FUNGSI UNTUK MENDAPATKAN REMOTE DARI CONSOLE
+local function FindFishingRemotes()
+    print("[Fishing] Mencari fishing remotes berdasarkan console...")
+    
+    -- Coba cari dari Packages
+    local packages = ReplicatedStorage:FindFirstChild("Packages")
+    if packages then
+        local net = packages:FindFirstChild("_Index")
+        if net then
+            local sleitnick = net:FindFirstChild("sleitnick_net@0.2.0")
+            if sleitnick then
+                local netRE = sleitnick:FindFirstChild("net.RE")
+                if netRE then
+                    fishingRemotes.FlyFishingEffect = netRE:FindFirstChild("FlyFishingEffect")
+                    fishingRemotes.FishCaught = netRE:FindFirstChild("FishCaught")
+                    fishingRemotes.ObtainedNewFishNotification = netRE:FindFirstChild("ObtainedNewFishNotification")
+                    fishingRemotes.FishingStopped = netRE:FindFirstChild("FishingStopped")
+                    fishingRemotes.FishingCompleted = netRE:FindFirstChild("FishingCompleted")
+                    fishingRemotes.FishingMinigameChanged = netRE:FindFirstChild("FishingMinigameChanged")
+                    fishingRemotes.CaughtFishVisual = netRE:FindFirstChild("CaughtFishVisual")
+                    
+                    print("[Fishing] Found remotes in Packages!")
+                end
+            end
+        end
+    end
+    
+    -- Coba cari dari Controllers
+    local controllers = ReplicatedStorage:FindFirstChild("_Controllers")
+    if controllers then
+        local fishingController = controllers:FindFirstChild("FishingController")
+        if fishingController then
+            print("[Fishing] Found FishingController in _Controllers")
+            
+            -- Cari InputStates untuk simulasi input
+            local inputStates = fishingController:FindFirstChild("InputStates")
+            if inputStates then
+                print("[Fishing] Found InputStates")
+            end
+            
+            -- Cari WeightRanges untuk fish weight
+            local weightRanges = fishingController:FindFirstChild("WeightRanges")
+            if weightRanges then
+                print("[Fishing] Found WeightRanges")
+            end
+            
+            -- Cari GamepadStates untuk kontrol
+            local gamepadStates = fishingController:FindFirstChild("GamepadStates")
+            if gamepadStates then
+                print("[Fishing] Found GamepadStates")
+            end
+        end
+        
+        local autoFishingController = controllers:FindFirstChild("AutoFishingController")
+        if autoFishingController then
+            print("[Fishing] Found AutoFishingController")
+        end
+    end
+    
+    -- Print status remotes
+    for name, remote in pairs(fishingRemotes) do
+        if remote then
+            print("[Fishing] ✓ " .. name .. " found")
+        else
+            print("[Fishing] ✗ " .. name .. " not found")
+        end
+    end
+end
+
+-- Panggil fungsi untuk mencari remotes
+FindFishingRemotes()
 
 local function SafeGetCharacter()
     return player.Character or player.CharacterAdded:Wait()
@@ -366,270 +446,222 @@ local function SafeGetHumanoid()
     return char and char:FindFirstChild("Humanoid")
 end
 
-local function GetFishingRod()
-    local success, result = pcall(function()
-        local backpack = player:FindFirstChild("Backpack")
-        if backpack then
-            for _, item in pairs(backpack:GetChildren()) do
-                if item:IsA("Tool") then
-                    local name = item.Name:lower()
-                    if name:find("rod") or name:find("pole") or name:find("fishing") then
-                        return item
-                    end
-                end
-            end
-        end
-        
-        local char = player.Character
-        if char then
-            for _, item in pairs(char:GetChildren()) do
-                if item:IsA("Tool") then
-                    local name = item.Name:lower()
-                    if name:find("rod") or name:find("pole") or name:find("fishing") then
-                        return item
-                    end
-                end
-            end
-        end
-        
-        return nil
-    end)
+-- FUNGSI UTAMA: AUTO CAST (Melempar kail)
+local function AutoCast()
+    if not fishingActive then return false end
     
-    return success and result or nil
-end
-
-local function EquipRod()
-    local success = pcall(function()
-        local rod = GetFishingRod()
-        if not rod then 
-            return false 
-        end
-        
-        if rod.Parent == player.Backpack then
-            local humanoid = SafeGetHumanoid()
-            if humanoid then
-                humanoid:EquipTool(rod)
-                task.wait(0.1)
-                return true
-            end
-        end
-        
-        return rod.Parent == player.Character
-    end)
+    -- Coba semua metode casting
+    local success = false
     
-    return success
-end
-
--- ... (fungsi instant fishing lainnya tetap sama seperti aslinya)
--- INSTANT FISHING - Method 1: ProximityPrompt
-local function InstantFishProximity()
-    local success = pcall(function()
-        local char = SafeGetCharacter()
-        if not char then return false end
-        
-        for _, descendant in pairs(char:GetDescendants()) do
-            if descendant:IsA("ProximityPrompt") then
-                local objText = descendant.ObjectText and descendant.ObjectText:lower() or ""
-                local actionText = descendant.ActionText and descendant.ActionText:lower() or ""
-                
-                if objText:find("fish") or objText:find("cast") or objText:find("catch") or
-                   actionText:find("fish") or actionText:find("cast") or actionText:find("catch") then
-                    
-                    if descendant.Enabled then
-                        fireproximityprompt(descendant)
-                        return true
-                    end
-                end
-            end
-        end
-        
-        return false
-    end)
-    
-    return success
-end
-
--- ... (metode instant fishing lainnya tetap sama)
--- INSTANT FISHING - Method 2: ClickDetector
-local function InstantFishClickDetector()
-    local success = pcall(function()
-        local rod = GetFishingRod()
-        if not rod or rod.Parent ~= player.Character then return false end
-        
-        local handle = rod:FindFirstChild("Handle")
-        if not handle then return false end
-        
-        local clickDetector = handle:FindFirstChild("ClickDetector")
-        if clickDetector then
-            fireclickdetector(clickDetector)
-            return true
-        end
-        
-        return false
-    end)
-    
-    return success
-end
-
--- INSTANT FISHING - Method 3: RemoteEvent/Function
-local function InstantFishRemote()
-    local success = pcall(function()
-        if not ReplicatedStorage then return false end
-        
-        -- Cari RemoteEvent fishing
-        for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
-            if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
-                local name = remote.Name:lower()
-                if name:find("fish") or name:find("cast") or name:find("catch") or name:find("reel") then
-                    if remote:IsA("RemoteEvent") then
-                        remote:FireServer("Cast")
-                        remote:FireServer("Reel")
-                        remote:FireServer("Catch")
-                        return true
-                    elseif remote:IsA("RemoteFunction") then
-                        remote:InvokeServer("Cast")
-                        remote:InvokeServer("Reel")
-                        remote:InvokeServer("Catch")
-                        return true
-                    end
-                end
-            end
-        end
-        
-        return false
-    end)
-    
-    return success
-end
-
--- INSTANT FISHING - Method 4: BindableEvent
-local function InstantFishBindable()
-    local success = pcall(function()
-        local char = SafeGetCharacter()
-        if not char then return false end
-        
-        for _, bindable in pairs(char:GetDescendants()) do
-            if bindable:IsA("BindableEvent") then
-                local name = bindable.Name:lower()
-                if name:find("fish") or name:find("cast") or name:find("catch") then
-                    bindable:Fire()
-                    return true
-                end
-            end
-        end
-        
-        return false
-    end)
-    
-    return success
-end
-
--- INSTANT FISHING - Method 5: Virtual Input
-local function InstantFishVirtualInput()
-    pcall(function()
-        -- Mouse Click
-        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-        task.wait(0.001)
-        VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
-        
-        -- E key
-        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-        task.wait(0.001)
-        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-        
-        -- F key
-        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
-        task.wait(0.001)
-        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
-    end)
-    
-    return true
-end
-
--- INSTANT FISHING - Method 6: Auto Reel
-local function AutoReelFish()
-    local success = pcall(function()
-        local char = SafeGetCharacter()
-        if not char then return false end
-        
-        local playerGui = player:WaitForChild("PlayerGui")
-        
-        -- Cari UI fishing
-        for _, gui in pairs(playerGui:GetDescendants()) do
-            if gui:IsA("ImageButton") or gui:IsA("TextButton") then
-                local name = gui.Name:lower()
-                local text = gui.Text and gui.Text:lower() or ""
-                
-                if name:find("reel") or name:find("catch") or text:find("reel") or text:find("catch") then
-                    if gui.Visible then
-                        for i = 1, 50 do
-                            gui.Activated:Fire()
-                            task.wait(0.001)
-                        end
-                        return true
-                    end
-                end
-            end
-        end
-        
-        return false
-    end)
-    
-    return success
-end
-
--- MASTER INSTANT FISHING FUNCTION
-local function InstantFish()
-    if not fishingActive then return end
-    
-    fishingStats.attempts = fishingStats.attempts + 1
-    
-    -- Pastikan rod equipped
-    if not EquipRod() then
-        return
+    -- Method 1: Gunakan remote FlyFishingEffect untuk casting
+    if fishingRemotes.FlyFishingEffect then
+        pcall(function()
+            fishingRemotes.FlyFishingEffect:FireServer("Cast")
+            success = true
+            print("[Fishing] Cast menggunakan FlyFishingEffect")
+        end)
     end
+    
+    -- Method 2: Gunakan remote FishingCompleted untuk memulai fishing
+    if fishingRemotes.FishingCompleted then
+        pcall(function()
+            fishingRemotes.FishingCompleted:FireServer("Start")
+            success = true
+            print("[Fishing] Start fishing menggunakan FishingCompleted")
+        end)
+    end
+    
+    -- Method 3: Simulasi input menggunakan InputStates jika ada
+    pcall(function()
+        local controllers = ReplicatedStorage:FindFirstChild("_Controllers")
+        if controllers then
+            local fishingController = controllers:FindFirstChild("FishingController")
+            if fishingController then
+                local inputStates = fishingController:FindFirstChild("InputStates")
+                if inputStates then
+                    -- Simulasi input fishing
+                    inputStates:FireServer("Fishing", true)
+                    task.wait(0.1)
+                    inputStates:FireServer("Fishing", false)
+                    success = true
+                    print("[Fishing] Cast menggunakan InputStates")
+                end
+            end
+        end
+    end)
+    
+    -- Method 4: Virtual input fallback
+    if not success then
+        pcall(function()
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+            task.wait(0.001)
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+            success = true
+            print("[Fishing] Cast menggunakan Virtual Input")
+        end)
+    end
+    
+    return success
+end
+
+-- FUNGSI UTAMA: AUTO REEL (Menarik ikan)
+local function AutoReel()
+    if not fishingActive then return false end
     
     local success = false
     
-    -- Try all methods simultaneously for maximum speed
-    if fishingConfig.instantFishing or fishingConfig.blantantMode then
-        -- Method 1: ProximityPrompt (paling umum)
-        if InstantFishProximity() then
+    -- Method 1: Gunakan remote FishCaught untuk reel
+    if fishingRemotes.FishCaught then
+        pcall(function()
+            fishingRemotes.FishCaught:FireServer("Reel")
             success = true
-        end
-        
-        -- Method 2: ClickDetector
-        if InstantFishClickDetector() then
+            print("[Fishing] Reel menggunakan FishCaught")
+        end)
+    end
+    
+    -- Method 2: Gunakan remote CaughtFishVisual
+    if fishingRemotes.CaughtFishVisual then
+        pcall(function()
+            fishingRemotes.CaughtFishVisual:FireServer()
             success = true
-        end
-        
-        -- Method 3: RemoteEvent
-        if InstantFishRemote() then
+            print("[Fishing] Reel menggunakan CaughtFishVisual")
+        end)
+    end
+    
+    -- Method 3: Gunakan remote FishingCompleted untuk complete
+    if fishingRemotes.FishingCompleted then
+        pcall(function()
+            fishingRemotes.FishingCompleted:FireServer("Complete")
             success = true
+            print("[Fishing] Complete menggunakan FishingCompleted")
+        end)
+    end
+    
+    -- Method 4: Simulasi input reel
+    pcall(function()
+        local controllers = ReplicatedStorage:FindFirstChild("_Controllers")
+        if controllers then
+            local fishingController = controllers:FindFirstChild("FishingController")
+            if fishingController then
+                local inputStates = fishingController:FindFirstChild("InputStates")
+                if inputStates then
+                    -- Simulasi input reel
+                    inputStates:FireServer("Reel", true)
+                    task.wait(0.1)
+                    inputStates:FireServer("Reel", false)
+                    success = true
+                    print("[Fishing] Reel menggunakan InputStates")
+                end
+            end
         end
-        
-        -- Method 4: BindableEvent
-        if InstantFishBindable() then
+    end)
+    
+    -- Method 5: Virtual input untuk reel (biasanya tombol E atau F)
+    if not success then
+        pcall(function()
+            -- Coba tombol E
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+            task.wait(0.001)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+            
+            -- Coba tombol F
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, game)
+            task.wait(0.001)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, game)
+            
             success = true
-        end
-        
-        -- Method 5: Virtual Input
-        if InstantFishVirtualInput() then
+            print("[Fishing] Reel menggunakan Virtual Input (E/F)")
+        end)
+    end
+    
+    return success
+end
+
+-- FUNGSI UTAMA: AUTO CATCH (Menangkap ikan)
+local function AutoCatch()
+    if not fishingActive then return false end
+    
+    local success = false
+    
+    -- Method 1: Gunakan remote FishingCompleted untuk catch
+    if fishingRemotes.FishingCompleted then
+        pcall(function()
+            fishingRemotes.FishingCompleted:FireServer("Catch")
             success = true
-        end
-        
-        -- Method 6: Auto Reel (jika ada minigame)
-        if fishingConfig.autoReel then
-            AutoReelFish()
-        end
+            print("[Fishing] Catch menggunakan FishingCompleted")
+        end)
+    end
+    
+    -- Method 2: Gunakan remote FishCaught untuk catch
+    if fishingRemotes.FishCaught then
+        pcall(function()
+            fishingRemotes.FishCaught:FireServer("Catch")
+            success = true
+            print("[Fishing] Catch menggunakan FishCaught")
+        end)
+    end
+    
+    -- Method 3: Notifikasi ikan baru
+    if fishingRemotes.ObtainedNewFishNotification then
+        pcall(function()
+            fishingRemotes.ObtainedNewFishNotification:FireServer()
+            success = true
+            print("[Fishing] Notifikasi ikan baru")
+        end)
+    end
+    
+    -- Method 4: Simulasi mouse click untuk catch
+    if not success then
+        pcall(function()
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+            task.wait(0.001)
+            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+            success = true
+            print("[Fishing] Catch menggunakan Mouse Click")
+        end)
     end
     
     if success then
         fishingStats.fishCaught = fishingStats.fishCaught + 1
+        print("[Fishing] 🎣 Fish caught! Total: " .. fishingStats.fishCaught)
+    end
+    
+    return success
+end
+
+-- FUNGSI AUTO FISHING COMPLETE CYCLE
+local function AutoFishingCycle()
+    if not fishingActive then return end
+    
+    fishingStats.attempts = fishingStats.attempts + 1
+    
+    -- 1. Cast fishing rod
+    if AutoCast() then
+        task.wait(0.2) -- Tunggu sedikit setelah cast
+        
+        -- 2. Auto reel (jika setting aktif)
+        if fishingConfig.autoReel then
+            for i = 1, 10 do -- Reel beberapa kali
+                AutoReel()
+                task.wait(0.05)
+            end
+        end
+        
+        -- 3. Catch fish
+        AutoCatch()
+        
+        -- 4. Tunggu sebelum cast lagi
+        if fishingConfig.blantantMode then
+            task.wait(0.001) -- Ultra fast
+        elseif fishingConfig.instantFishing then
+            task.wait(0.01) -- Fast
+        else
+            task.wait(fishingConfig.fishingDelay)
+        end
     end
 end
 
--- Start Fishing dengan connection yang proper
+-- START FISHING dengan semua remotes
 local function StartFishing()
     if fishingActive then 
         print("[Fishing] Already fishing!")
@@ -639,30 +671,28 @@ local function StartFishing()
     fishingActive = true
     fishingStats.startTime = tick()
     
-    print("[Fishing] Starting instant fishing...")
-    print("[Fishing] Delay:", fishingConfig.fishingDelay)
+    print("[Fishing] =========================================")
+    print("[Fishing] STARTING ENHANCED INSTANT FISHING")
+    print("[Fishing] =========================================")
+    print("[Fishing] Mode: " .. (fishingConfig.blantantMode and "BLASTANT" or "INSTANT"))
+    print("[Fishing] Delay: " .. fishingConfig.fishingDelay)
+    print("[Fishing] Auto Reel: " .. tostring(fishingConfig.autoReel))
+    print("[Fishing] =========================================")
     
     -- Main fishing loop
     fishingConnection = RunService.Heartbeat:Connect(function()
         if not fishingActive then return end
-        
-        pcall(InstantFish)
-        
-        -- Delay based on mode
-        if fishingConfig.blantantMode then
-            task.wait(0.001) -- Ultra fast
-        elseif fishingConfig.instantFishing then
-            task.wait(0.01) -- Fast
-        else
-            task.wait(fishingConfig.fishingDelay)
-        end
+        pcall(AutoFishingCycle)
     end)
     
-    -- Auto reel connection (terpisah untuk minigame)
+    -- Extra reel loop untuk minigame (jika ada)
     if fishingConfig.autoReel then
         reelConnection = RunService.RenderStepped:Connect(function()
             if not fishingActive then return end
-            pcall(AutoReelFish)
+            pcall(function()
+                -- Extra reel untuk memastikan
+                AutoReel()
+            end)
         end)
     end
 end
@@ -680,8 +710,15 @@ local function StopFishing()
         reelConnection = nil
     end
     
-    print("[Fishing] Stopped fishing")
-    print("[Fishing] Total fish caught:", fishingStats.fishCaught)
+    print("[Fishing] =========================================")
+    print("[Fishing] FISHING STOPPED")
+    print("[Fishing] Total fish caught: " .. fishingStats.fishCaught)
+    print("[Fishing] Total attempts: " .. fishingStats.attempts)
+    if fishingStats.attempts > 0 then
+        local successRate = (fishingStats.fishCaught / fishingStats.attempts) * 100
+        print("[Fishing] Success rate: " .. string.format("%.2f", successRate) .. "%")
+    end
+    print("[Fishing] =========================================")
 end
 
 -- ═══════════════════════════════════════════════════════════
@@ -812,6 +849,36 @@ statusLabel.Text = "⭕ OFFLINE"
 statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 statusLabel.TextXAlignment = Enum.TextXAlignment.Left
 statusLabel.Parent = controlsPanel
+
+-- Remote Status
+local remoteStatus = Instance.new("TextLabel")
+remoteStatus.Name = "RemoteStatus"
+remoteStatus.Size = UDim2.new(1, -24, 0, 20)
+remoteStatus.Position = UDim2.new(0, 12, 1, -25)
+remoteStatus.BackgroundTransparency = 1
+remoteStatus.Font = Enum.Font.Gotham
+remoteStatus.TextSize = 10
+remoteStatus.Text = "Remotes: Searching..."
+remoteStatus.TextColor3 = Color3.fromRGB(150, 150, 150)
+remoteStatus.TextXAlignment = Enum.TextXAlignment.Left
+remoteStatus.Parent = controlsPanel
+
+-- Update remote status
+spawn(function()
+    task.wait(2)
+    local foundCount = 0
+    for _, remote in pairs(fishingRemotes) do
+        if remote then foundCount = foundCount + 1 end
+    end
+    
+    if foundCount > 0 then
+        remoteStatus.Text = "Remotes: " .. foundCount .. " found ✓"
+        remoteStatus.TextColor3 = Color3.fromRGB(100, 255, 100)
+    else
+        remoteStatus.Text = "Remotes: None found, using fallback methods"
+        remoteStatus.TextColor3 = Color3.fromRGB(255, 150, 100)
+    end
+end)
 
 -- Toggles Panel
 local togglesPanel = Instance.new("Frame")
@@ -1001,7 +1068,7 @@ end
 -- Highlight fishing menu by default
 menuButtons["Fishing"].BackgroundColor3 = Color3.fromRGB(32,8,8)
 
--- ========== PERUBAHAN: WINDOW CONTROLS FUNCTIONALITY DENGAN MAXIMIZE ==========
+-- ========== WINDOW CONTROLS FUNCTIONALITY ==========
 local uiOpen = true
 local isMaximized = false
 local originalSize = UDim2.new(0, WIDTH, 0, HEIGHT)
@@ -1067,7 +1134,7 @@ local function closeUI()
     hideMainUI()
 end
 
--- Maximize Function - BARU DITAMBAHKAN
+-- Maximize Function
 local function maximizeUI()
     if not uiOpen then
         showMainUI()
@@ -1080,17 +1147,17 @@ local function maximizeUI()
             Size = originalSize,
             Position = originalPosition
         }):Play()
-        maximizeBtn.Text = "□" -- Icon kotak untuk maximize
+        maximizeBtn.Text = "□"
         maximizeBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
         isMaximized = false
         print("[UI] Window restored to normal size")
     else
-        -- Maximize to full screen (dengan padding)
+        -- Maximize to full screen
         TweenService:Create(container, TweenInfo.new(0.3), {
             Size = maximizedSize,
             Position = maximizedPosition
         }):Play()
-        maximizeBtn.Text = "⧉" -- Icon restore untuk minimize
+        maximizeBtn.Text = "⧉"
         maximizeBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 100)
         isMaximized = true
         print("[UI] Window maximized")
@@ -1113,7 +1180,7 @@ trayIcon.MouseLeave:Connect(function()
     TweenService:Create(trayGlow, TweenInfo.new(0.2), {ImageTransparency = 0.7}):Play()
 end)
 
--- Window Controls Hover Effects - DIPERBARUI
+-- Window Controls Hover Effects
 minimizeBtn.MouseEnter:Connect(function()
     TweenService:Create(minimizeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
 end)
@@ -1122,7 +1189,6 @@ minimizeBtn.MouseLeave:Connect(function()
     TweenService:Create(minimizeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
 end)
 
--- Efek hover untuk maximize button - BARU DITAMBAHKAN
 maximizeBtn.MouseEnter:Connect(function()
     TweenService:Create(maximizeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
 end)
@@ -1143,13 +1209,12 @@ closeBtn.MouseLeave:Connect(function()
     TweenService:Create(closeBtn, TweenInfo.new(0.15), {BackgroundColor3 = Color3.fromRGB(200, 40, 40)}):Play()
 end)
 
--- Button Clicks - DIPERBARUI
+-- Button Clicks
 minimizeBtn.MouseButton1Click:Connect(minimizeUI)
-maximizeBtn.MouseButton1Click:Connect(maximizeUI) -- BARU DITAMBAHKAN
+maximizeBtn.MouseButton1Click:Connect(maximizeUI)
 closeBtn.MouseButton1Click:Connect(closeUI)
 
--- ========== FUNGSI DRAGGABLE WINDOW ==========
--- Tambahkan fungsi draggable untuk title bar
+-- Draggable Window
 local dragging = false
 local dragStart = Vector2.new(0, 0)
 local containerStart = Vector2.new(0, 0)
@@ -1188,14 +1253,17 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- ========== STATS UPDATE LOOP ==========
+-- Stats Update Loop
 spawn(function()
     while true do
         local elapsed = math.max(1, tick() - fishingStats.startTime)
         local rate = fishingStats.fishCaught / elapsed
+        local successRate = fishingStats.attempts > 0 and (fishingStats.fishCaught / fishingStats.attempts) * 100 or 0
         
         fishCountLabel.Text = string.format("Fish Caught: %d", fishingStats.fishCaught)
         rateLabel.Text = string.format("Rate: %.2f/s", rate)
+        attemptsLabel.Text = string.format("Attempts: %d", fishingStats.attempts)
+        successLabel.Text = string.format("Success: %.1f%%", successRate)
         memLabel.Text = string.format("Memory: %d KB | Fish: %d", math.floor(collectgarbage("count")), fishingStats.fishCaught)
         
         wait(0.5)
@@ -1206,6 +1274,7 @@ end)
 showMainUI()
 
 print("[Kaitun Fish It] UI Loaded Successfully!")
+print("🎣 Fishing system optimized based on console data")
 print("🎣 Click - to minimize to tray")
 print("🎣 Click □ to maximize window") 
 print("🎣 Click 🗙 to close to tray")
