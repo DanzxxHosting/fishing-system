@@ -1,4 +1,4 @@
--- 🎣 FISH IT! HACKS - MOBILE UI
+-- 🎣 FISH IT! HACKS - COMPLETE MOBILE UI
 -- fishing_hack_ui.lua - Place in StarterPlayerScripts
 
 local Players = game:GetService("Players")
@@ -22,12 +22,12 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "FishingHackUI"
 screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.ResetOnSpawn = false
-screenGui.Enabled = true -- Langsung muncul
+screenGui.Enabled = true
 
 -- Main Container - Centered untuk Mobile
 local mainContainer = Instance.new("Frame")
 mainContainer.Name = "MainContainer"
-mainContainer.Size = UDim2.new(0.85, 0, 0.8, 0) -- Lebih besar untuk mobile
+mainContainer.Size = UDim2.new(0.85, 0, 0.8, 0)
 mainContainer.Position = UDim2.new(0.5, 0, 0.5, 0)
 mainContainer.AnchorPoint = Vector2.new(0.5, 0.5)
 mainContainer.BackgroundColor3 = Color3.fromRGB(15, 20, 35)
@@ -40,7 +40,6 @@ containerCorner.CornerRadius = UDim.new(0, 16)
 containerCorner.Parent = mainContainer
 
 local containerStroke = Instance.new("UIStroke")
-containerStroke.Name = "ContainerStroke"
 containerStroke.Color = Color3.fromRGB(40, 120, 220)
 containerStroke.Thickness = 3
 containerStroke.Transparency = 0.3
@@ -49,7 +48,7 @@ containerStroke.Parent = mainContainer
 -- Header
 local header = Instance.new("Frame")
 header.Name = "Header"
-header.Size = UDim2.new(1, 0, 0, 80) -- Lebih tinggi untuk mobile
+header.Size = UDim2.new(1, 0, 0, 80)
 header.BackgroundColor3 = Color3.fromRGB(20, 30, 60)
 header.BorderSizePixel = 0
 
@@ -68,18 +67,7 @@ title.TextSize = 26
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
 
-local subtitle = Instance.new("TextLabel")
-subtitle.Name = "Subtitle"
-subtitle.Size = UDim2.new(1, -80, 0, 25)
-subtitle.Position = UDim2.new(0, 20, 0, 45)
-subtitle.BackgroundTransparency = 1
-subtitle.Text = "Mobile Fishing Assistant"
-subtitle.TextColor3 = Color3.fromRGB(180, 220, 255)
-subtitle.TextSize = 16
-subtitle.Font = Enum.Font.Gotham
-subtitle.TextXAlignment = Enum.TextXAlignment.Left
-
--- Close Button (Besar untuk mobile)
+-- Close Button
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseButton"
 closeButton.Size = UDim2.new(0, 60, 0, 60)
@@ -101,7 +89,7 @@ content.Name = "Content"
 content.Size = UDim2.new(1, -20, 1, -100)
 content.Position = UDim2.new(0, 10, 0, 90)
 content.BackgroundTransparency = 1
-content.ScrollBarThickness = 8 -- Lebih tebal untuk mobile
+content.ScrollBarThickness = 8
 content.ScrollBarImageColor3 = Color3.fromRGB(60, 120, 220)
 content.AutomaticCanvasSize = Enum.AutomaticSize.Y
 content.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -120,11 +108,11 @@ mainTitle.TextSize = 22
 mainTitle.Font = Enum.Font.GothamBold
 mainTitle.TextXAlignment = Enum.TextXAlignment.Left
 
--- Feature Toggle Function untuk Mobile
+-- Feature Toggle Function
 local function createFeatureToggle(featureName, description, icon, color, yPosition)
     local toggleFrame = Instance.new("Frame")
     toggleFrame.Name = featureName .. "Frame"
-    toggleFrame.Size = UDim2.new(1, 0, 0, 80) -- Lebih tinggi untuk mobile
+    toggleFrame.Size = UDim2.new(1, 0, 0, 80)
     toggleFrame.Position = UDim2.new(0, 0, 0, yPosition)
     toggleFrame.BackgroundColor3 = Color3.fromRGB(25, 35, 70)
     toggleFrame.BackgroundTransparency = 0.2
@@ -137,7 +125,7 @@ local function createFeatureToggle(featureName, description, icon, color, yPosit
     -- Icon
     local iconLabel = Instance.new("TextLabel")
     iconLabel.Name = "Icon"
-    iconLabel.Size = UDim2.new(0, 50, 0, 50) -- Lebih besar untuk mobile
+    iconLabel.Size = UDim2.new(0, 50, 0, 50)
     iconLabel.Position = UDim2.new(0, 15, 0.5, -25)
     iconLabel.AnchorPoint = Vector2.new(0, 0.5)
     iconLabel.BackgroundTransparency = 1
@@ -175,10 +163,10 @@ local function createFeatureToggle(featureName, description, icon, color, yPosit
     featureDescLabel.Font = Enum.Font.Gotham
     featureDescLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Toggle Switch untuk Mobile
+    -- Toggle Switch
     local toggleButton = Instance.new("TextButton")
     toggleButton.Name = "ToggleButton"
-    toggleButton.Size = UDim2.new(0, 80, 0, 40) -- Lebih besar untuk mobile
+    toggleButton.Size = UDim2.new(0, 80, 0, 40)
     toggleButton.Position = UDim2.new(1, -20, 0.5, -20)
     toggleButton.AnchorPoint = Vector2.new(1, 0.5)
     toggleButton.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
@@ -234,7 +222,7 @@ local function createFeatureToggle(featureName, description, icon, color, yPosit
     }
 end
 
--- Create Main Features untuk Mobile
+-- Create Main Features
 local mainFeatures = {}
 local featureData = {
     {
@@ -260,7 +248,7 @@ local featureData = {
     },
     {
         name = "NO ANIMATION",
-        desc = "Lewati animasi",
+        desc = "Pancingan diam tapi jalan",
         icon = "🎬",
         color = Color3.fromRGB(170, 0, 255),
         yPos = 320
@@ -355,10 +343,10 @@ delayValue.TextSize = 16
 delayValue.Font = Enum.Font.Gotham
 delayValue.TextXAlignment = Enum.TextXAlignment.Left
 
--- Delay Slider untuk Mobile
+-- Delay Slider
 local delaySlider = Instance.new("Frame")
 delaySlider.Name = "DelaySlider"
-delaySlider.Size = UDim2.new(0, 120, 0, 25) -- Lebar untuk mobile
+delaySlider.Size = UDim2.new(0, 120, 0, 25)
 delaySlider.Position = UDim2.new(1, -20, 0.5, -12.5)
 delaySlider.AnchorPoint = Vector2.new(1, 0.5)
 delaySlider.BackgroundColor3 = Color3.fromRGB(40, 60, 100)
@@ -380,7 +368,7 @@ fillCorner.Parent = delayFill
 
 local delayHandle = Instance.new("Frame")
 delayHandle.Name = "DelayHandle"
-delayHandle.Size = UDim2.new(0, 30, 0, 30) -- Lebih besar untuk mobile
+delayHandle.Size = UDim2.new(0, 30, 0, 30)
 delayHandle.Position = UDim2.new(0.5, -15, 0.5, -15)
 delayHandle.BackgroundColor3 = Color3.fromRGB(240, 240, 255)
 delayHandle.BorderSizePixel = 0
@@ -388,6 +376,54 @@ delayHandle.BorderSizePixel = 0
 local handleCorner = Instance.new("UICorner")
 handleCorner.CornerRadius = UDim.new(1, 0)
 handleCorner.Parent = delayHandle
+
+-- Status Display
+local statusFrame = Instance.new("Frame")
+statusFrame.Name = "StatusFrame"
+statusFrame.Size = UDim2.new(1, 0, 0, 100)
+statusFrame.Position = UDim2.new(0, 0, 0, 600)
+statusFrame.BackgroundColor3 = Color3.fromRGB(25, 35, 70)
+statusFrame.BackgroundTransparency = 0.2
+statusFrame.BorderSizePixel = 0
+
+local statusCorner = Instance.new("UICorner")
+statusCorner.CornerRadius = UDim.new(0, 12)
+statusCorner.Parent = statusFrame
+
+local statusIcon = Instance.new("TextLabel")
+statusIcon.Name = "StatusIcon"
+statusIcon.Size = UDim2.new(0, 50, 0, 50)
+statusIcon.Position = UDim2.new(0, 15, 0.5, -25)
+statusIcon.AnchorPoint = Vector2.new(0, 0.5)
+statusIcon.BackgroundTransparency = 1
+statusIcon.Text = "📊"
+statusIcon.TextColor3 = Color3.fromRGB(100, 200, 255)
+statusIcon.TextSize = 30
+statusIcon.Font = Enum.Font.GothamBold
+
+local statusTitle = Instance.new("TextLabel")
+statusTitle.Name = "StatusTitle"
+statusTitle.Size = UDim2.new(1, -80, 0, 30)
+statusTitle.Position = UDim2.new(0, 80, 0, 15)
+statusTitle.BackgroundTransparency = 1
+statusTitle.Text = "STATUS SISTEM"
+statusTitle.TextColor3 = Color3.fromRGB(240, 240, 255)
+statusTitle.TextSize = 18
+statusTitle.Font = Enum.Font.GothamSemibold
+statusTitle.TextXAlignment = Enum.TextXAlignment.Left
+
+local statusText = Instance.new("TextLabel")
+statusText.Name = "StatusText"
+statusText.Size = UDim2.new(1, -80, 0, 40)
+statusText.Position = UDim2.new(0, 80, 0, 45)
+statusText.BackgroundTransparency = 1
+statusText.Text = "Siap memancing! 🎣"
+statusText.TextColor3 = Color3.fromRGB(180, 220, 255)
+statusText.TextSize = 14
+statusText.Font = Enum.Font.Gotham
+statusText.TextXAlignment = Enum.TextXAlignment.Left
+statusText.TextYAlignment = Enum.TextYAlignment.Top
+statusText.TextWrapped = true
 
 -- Assemble all UI elements
 mainTitle.Parent = content
@@ -406,7 +442,11 @@ delayFrame.Parent = settingsSection
 
 settingsSection.Parent = content
 
-subtitle.Parent = header
+statusText.Parent = statusFrame
+statusTitle.Parent = statusFrame
+statusIcon.Parent = statusFrame
+statusFrame.Parent = content
+
 title.Parent = header
 closeButton.Parent = header
 header.Parent = mainContainer
@@ -416,10 +456,11 @@ screenGui.Parent = playerGui
 
 -- Status update function
 local function updateStatus(message)
+    statusText.Text = message
     print("🎣 " .. message)
 end
 
--- Toggle animation function untuk Mobile
+-- Toggle animation function
 local function animateToggle(toggleData, enabled)
     if enabled then
         -- Move knob to right
@@ -453,24 +494,44 @@ local function animateToggle(toggleData, enabled)
     end
 end
 
+-- Fishing hack settings
+local fishingSettings = {
+    AutoFish = false,
+    BlantantFish = false,
+    InstantFish = false,
+    NoAnimation = false,
+    CatchDelay = 0.5
+}
+
 -- Setup main feature toggles
 for featureName, toggleData in pairs(mainFeatures) do
     toggleData.button.MouseButton1Click:Connect(function()
         toggleData.enabled = not toggleData.enabled
         animateToggle(toggleData, toggleData.enabled)
         
+        -- Update settings
+        if featureName == "AUTO FISHING" then
+            fishingSettings.AutoFish = toggleData.enabled
+        elseif featureName == "BLATANT FISHING" then
+            fishingSettings.BlantantFish = toggleData.enabled
+        elseif featureName == "INSTANT FISHING" then
+            fishingSettings.InstantFish = toggleData.enabled
+        elseif featureName == "NO ANIMATION" then
+            fishingSettings.NoAnimation = toggleData.enabled
+        end
+        
         -- Send to server
         fishingRemote:FireServer("ToggleFeature", {
             Feature = featureName,
-            Enabled = toggleData.enabled
+            Enabled = toggleData.enabled,
+            Settings = fishingSettings
         })
         
         updateStatus(featureName .. " " .. (toggleData.enabled and "DIAKTIFKAN 🎣" or "dinonaktifkan"))
     end)
 end
 
--- Delay slider functionality untuk Mobile
-local catchDelay = 0.5
+-- Delay slider functionality
 local isDraggingDelay = false
 
 local function updateDelayValue(xPosition)
@@ -478,17 +539,17 @@ local function updateDelayValue(xPosition)
     local absoluteWidth = delaySlider.AbsoluteSize.X
     local percent = math.clamp((xPosition - absoluteX) / absoluteWidth, 0, 1)
     
-    catchDelay = math.floor((0.1 + (percent * 1.9)) * 10) / 10 -- Range: 0.1s to 2.0s
-    delayValue.Text = string.format("%.1f detik", catchDelay)
+    fishingSettings.CatchDelay = math.floor((0.1 + (percent * 1.9)) * 10) / 10 -- Range: 0.1s to 2.0s
+    delayValue.Text = string.format("%.1f detik", fishingSettings.CatchDelay)
     delayFill.Size = UDim2.new(percent, 0, 1, 0)
     delayHandle.Position = UDim2.new(percent, -15, 0.5, -15)
     
     -- Update server
     fishingRemote:FireServer("UpdateSettings", {
-        CatchDelay = catchDelay
+        CatchDelay = fishingSettings.CatchDelay
     })
     
-    updateStatus("Waktu tangkap diatur ke " .. catchDelay .. "s")
+    updateStatus("Waktu tangkap diatur ke " .. fishingSettings.CatchDelay .. "s")
 end
 
 delaySlider.InputBegan:Connect(function(input)
@@ -524,17 +585,16 @@ end)
 
 -- Close button functionality
 closeButton.MouseButton1Click:Connect(function()
-    -- Animation untuk close
     TweenService:Create(mainContainer, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
         Size = UDim2.new(0, 0, 0, 0)
     }):Play()
     
     task.wait(0.3)
     screenGui.Enabled = false
-    print("🎣 UI ditutup")
+    updateStatus("UI ditutup")
 end)
 
--- Tambahkan tombol untuk membuka kembali UI (opsional)
+-- Floating button to reopen UI
 local openButton = Instance.new("TextButton")
 openButton.Name = "OpenButton"
 openButton.Size = UDim2.new(0, 80, 0, 80)
@@ -544,7 +604,7 @@ openButton.Text = "🎣"
 openButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 openButton.TextSize = 36
 openButton.Font = Enum.Font.GothamBold
-openButton.Visible = false -- Mulai tidak terlihat
+openButton.Visible = false
 
 local openButtonCorner = Instance.new("UICorner")
 openButtonCorner.CornerRadius = UDim.new(1, 0)
@@ -556,16 +616,15 @@ openButton.MouseButton1Click:Connect(function()
     screenGui.Enabled = true
     openButton.Visible = false
     
-    -- Animation untuk open
     mainContainer.Size = UDim2.new(0, 0, 0, 0)
     TweenService:Create(mainContainer, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
         Size = UDim2.new(0.85, 0, 0.8, 0)
     }):Play()
     
-    print("🎣 UI dibuka")
+    updateStatus("UI dibuka kembali")
 end)
 
--- Saat UI ditutup, tampilkan tombol open
+-- When UI closes, show open button
 closeButton.MouseButton1Click:Connect(function()
     screenGui.Enabled = false
     openButton.Visible = true
@@ -585,7 +644,6 @@ TweenService:Create(mainContainer, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enu
     Size = UDim2.new(0.85, 0, 0.8, 0)
 }):Play()
 
+updateStatus("Fishing Hack siap digunakan! 🎣")
+
 print("🎣 Fishing Hack UI Mobile dimuat!")
-print("📏 UI muncul otomatis di tengah layar")
-print("🖱️ Klik tombol X untuk menutup UI")
-print("🎮 Tombol floating tersedia untuk membuka kembali")
