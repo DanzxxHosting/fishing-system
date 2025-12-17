@@ -1,4 +1,4 @@
--- Clean Centered UI with 50% Transparency
+-- Clean Centered UI with 50% Transparency - FIXED VERSION
 -- ui.lua - Place in StarterPlayerScripts
 
 local Players = game:GetService("Players")
@@ -10,10 +10,13 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Create RemoteEvent for communication
-if not ReplicatedStorage:FindFirstChild("HighlightToggle") then
+-- Wait for RemoteEvent
+local highlightRemote
+while not ReplicatedStorage:FindFirstChild("HighlightToggle") do
+    task.wait(0.1)
     Instance.new("RemoteEvent", ReplicatedStorage).Name = "HighlightToggle"
 end
+highlightRemote = ReplicatedStorage:WaitForChild("HighlightToggle")
 
 -- Create main UI
 local screenGui = Instance.new("ScreenGui")
@@ -35,7 +38,7 @@ mainContainer.Size = UDim2.new(0, 400, 0, 500)
 mainContainer.Position = UDim2.new(0.5, -200, 0.5, -250)
 mainContainer.AnchorPoint = Vector2.new(0.5, 0.5)
 mainContainer.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-mainContainer.BackgroundTransparency = 0.5 -- 50% transparent
+mainContainer.BackgroundTransparency = 0.5
 mainContainer.BorderSizePixel = 0
 
 local containerCorner = Instance.new("UICorner")
@@ -173,6 +176,13 @@ colorTitle.TextSize = 16
 colorTitle.Font = Enum.Font.GothamSemibold
 colorTitle.TextXAlignment = Enum.TextXAlignment.Left
 
+-- Color Container
+local colorContainer = Instance.new("Frame")
+colorContainer.Name = "ColorContainer"
+colorContainer.Size = UDim2.new(1, -30, 0, 80)
+colorContainer.Position = UDim2.new(0, 15, 0, 40)
+colorContainer.BackgroundTransparency = 1
+
 -- Color Grid
 local colorGrid = Instance.new("UIGridLayout")
 colorGrid.Name = "ColorGrid"
@@ -181,25 +191,6 @@ colorGrid.CellPadding = UDim2.new(0, 8, 0, 8)
 colorGrid.HorizontalAlignment = Enum.HorizontalAlignment.Center
 colorGrid.SortOrder = Enum.SortOrder.LayoutOrder
 colorGrid.StartCorner = Enum.StartCorner.TopLeft
-
--- Color Options
-local colors = {
-    {Color3.fromRGB(100, 200, 255), "Sky Blue"},
-    {Color3.fromRGB(0, 230, 118), "Emerald"},
-    {Color3.fromRGB(255, 82, 82), "Ruby"},
-    {Color3.fromRGB(255, 214, 0), "Gold"},
-    {Color3.fromRGB(255, 94, 247), "Pink"},
-    {Color3.fromRGB(0, 230, 230), "Cyan"},
-    {Color3.fromRGB(255, 170, 0), "Orange"},
-    {Color3.fromRGB(230, 230, 230), "White"}
-}
-
-local colorButtons = {}
-local colorContainer = Instance.new("Frame")
-colorContainer.Name = "ColorContainer"
-colorContainer.Size = UDim2.new(1, -30, 0, 80)
-colorContainer.Position = UDim2.new(0, 15, 0, 40)
-colorContainer.BackgroundTransparency = 1
 
 -- Settings Section
 local settingsSection = Instance.new("Frame")
@@ -314,6 +305,20 @@ content.Parent = mainContainer
 mainContainer.Parent = screenGui
 screenGui.Parent = playerGui
 
+-- Color Options
+local colors = {
+    {Color3.fromRGB(100, 200, 255), "Sky Blue"},
+    {Color3.fromRGB(0, 230, 118), "Emerald"},
+    {Color3.fromRGB(255, 82, 82), "Ruby"},
+    {Color3.fromRGB(255, 214, 0), "Gold"},
+    {Color3.fromRGB(255, 94, 247), "Pink"},
+    {Color3.fromRGB(0, 230, 230), "Cyan"},
+    {Color3.fromRGB(255, 170, 0), "Orange"},
+    {Color3.fromRGB(230, 230, 230), "White"}
+}
+
+local colorButtons = {}
+
 -- Create color buttons
 for i, colorData in ipairs(colors) do
     local colorButton = Instance.new("TextButton")
@@ -322,6 +327,7 @@ for i, colorData in ipairs(colors) do
     colorButton.BackgroundColor3 = colorData[1]
     colorButton.Text = ""
     colorButton.AutoButtonColor = false
+    colorButton.LayoutOrder = i
     
     local colorButtonCorner = Instance.new("UICorner")
     colorButtonCorner.CornerRadius = UDim.new(1, 0)
@@ -351,11 +357,15 @@ for i, colorData in ipairs(colors) do
 end
 
 -- Create settings sliders
+local sliders = {}
+
 local function createSlider(parent, name, label, defaultValue, minValue, maxValue, step)
+    local yPosition = 40 + (#parent:GetChildren() - 1) * 55
+    
     local sliderContainer = Instance.new("Frame")
     sliderContainer.Name = name .. "Container"
     sliderContainer.Size = UDim2.new(1, -30, 0, 50)
-    sliderContainer.Position = UDim2.new(0, 15, 0, 40 + (#parent:GetChildren() - 1) * 55)
+    sliderContainer.Position = UDim2.new(0, 15, 0, yPosition)
     sliderContainer.BackgroundTransparency = 1
     
     local sliderLabel = Instance.new("TextLabel")
@@ -393,7 +403,8 @@ local function createSlider(parent, name, label, defaultValue, minValue, maxValu
     
     local sliderFill = Instance.new("Frame")
     sliderFill.Name = name .. "Fill"
-    sliderFill.Size = UDim2.new(defaultValue, 0, 1, 0)
+    local percent = (defaultValue - minValue) / (maxValue - minValue)
+    sliderFill.Size = UDim2.new(percent, 0, 1, 0)
     sliderFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255)
     sliderFill.BorderSizePixel = 0
     
@@ -404,7 +415,7 @@ local function createSlider(parent, name, label, defaultValue, minValue, maxValu
     local sliderHandle = Instance.new("Frame")
     sliderHandle.Name = name .. "Handle"
     sliderHandle.Size = UDim2.new(0, 20, 0, 20)
-    sliderHandle.Position = UDim2.new(defaultValue, -10, 0.5, -10)
+    sliderHandle.Position = UDim2.new(percent, -10, 0.5, -10)
     sliderHandle.BackgroundColor3 = Color3.fromRGB(240, 240, 240)
     sliderHandle.BorderSizePixel = 0
     
@@ -421,7 +432,7 @@ local function createSlider(parent, name, label, defaultValue, minValue, maxValu
     
     sliderContainer.Parent = parent
     
-    return {
+    local sliderData = {
         container = sliderContainer,
         label = sliderLabel,
         value = sliderValue,
@@ -431,14 +442,18 @@ local function createSlider(parent, name, label, defaultValue, minValue, maxValu
         current = defaultValue,
         min = minValue,
         max = maxValue,
-        step = step
+        step = step,
+        name = name
     }
+    
+    sliders[name] = sliderData
+    return sliderData
 end
 
 -- Create sliders
-local transparencySlider = createSlider(settingsSection, "Transparency", "Transparency", 0.5, 0.1, 0.9, 0.05)
-local intensitySlider = createSlider(settingsSection, "Intensity", "Intensity", 0.8, 0.3, 1.0, 0.05)
-local thicknessSlider = createSlider(settingsSection, "Thickness", "Outline Thickness", 2, 1, 5, 0.5)
+createSlider(settingsSection, "Transparency", "Transparency", 0.5, 0.1, 0.9, 0.05)
+createSlider(settingsSection, "Intensity", "Intensity", 0.8, 0.3, 1.0, 0.05)
+createSlider(settingsSection, "Thickness", "Outline Thickness", 2, 1, 5, 0.5)
 
 -- UI State
 local isHighlightEnabled = false
@@ -462,8 +477,7 @@ local function updatePreview()
         pulse:Play()
     else
         -- Stop all tweens
-        local tweens = TweenService:GetRunningTweens(previewHighlight)
-        for _, tween in ipairs(tweens) do
+        for _, tween in ipairs(TweenService:GetRunningTweens(previewHighlight)) do
             tween:Cancel()
         end
     end
@@ -501,7 +515,7 @@ toggleButton.MouseButton1Click:Connect(function()
     updateToggle()
     
     -- Send toggle to server
-    ReplicatedStorage.HighlightToggle:FireServer(isHighlightEnabled, {
+    highlightRemote:FireServer(isHighlightEnabled, {
         Color = selectedColor,
         Transparency = settings.Transparency,
         Intensity = settings.Intensity,
@@ -525,7 +539,7 @@ for button, data in pairs(colorButtons) do
         
         -- Update server if enabled
         if isHighlightEnabled then
-            ReplicatedStorage.HighlightToggle:FireServer(isHighlightEnabled, {
+            highlightRemote:FireServer(isHighlightEnabled, {
                 Color = selectedColor,
                 Transparency = settings.Transparency,
                 Intensity = settings.Intensity,
@@ -554,14 +568,14 @@ local function setupSlider(sliderData)
         sliderData.handle.Position = UDim2.new(percent, -10, 0.5, -10)
         
         -- Update settings
-        settings[sliderData.label.Text] = value
+        settings[sliderData.name] = value
         
         -- Update preview
         updatePreview()
         
         -- Update server if enabled
         if isHighlightEnabled then
-            ReplicatedStorage.HighlightToggle:FireServer(isHighlightEnabled, {
+            highlightRemote:FireServer(isHighlightEnabled, {
                 Color = selectedColor,
                 Transparency = settings.Transparency,
                 Intensity = settings.Intensity,
@@ -603,14 +617,9 @@ local function setupSlider(sliderData)
 end
 
 -- Setup all sliders
-setupSlider(transparencySlider)
-setupSlider(intensitySlider)
-setupSlider(thicknessSlider)
-
--- Close button
-closeButton.MouseButton1Click:Connect(function()
-    toggleUI()
-end)
+for _, sliderData in pairs(sliders) do
+    setupSlider(sliderData)
+end
 
 -- Toggle UI function
 local function toggleUI()
@@ -639,6 +648,11 @@ local function toggleUI()
         }):Play()
     end
 end
+
+-- Close button
+closeButton.MouseButton1Click:Connect(function()
+    toggleUI()
+end)
 
 -- Keyboard shortcut (F3)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
