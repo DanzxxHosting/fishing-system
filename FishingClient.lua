@@ -1,4 +1,4 @@
--- 🎣 FISH IT! HACKS - PROFESSIONAL UI
+-- 🎣 FISH IT! HACKS - FIXED CENTERED UI
 -- fishing_hack_ui.lua - Place in StarterPlayerScripts
 
 local Players = game:GetService("Players")
@@ -24,32 +24,15 @@ screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 screenGui.ResetOnSpawn = false
 screenGui.Enabled = false
 
--- Background Overlay
-local overlay = Instance.new("Frame")
-overlay.Name = "Overlay"
-overlay.Size = UDim2.new(1, 0, 1, 0)
-overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-overlay.BackgroundTransparency = 0.7
-overlay.BorderSizePixel = 0
-overlay.Parent = screenGui
-
--- Main Container - Centered with elegant design
+-- Main Container - Perfectly Centered
 local mainContainer = Instance.new("Frame")
 mainContainer.Name = "MainContainer"
 mainContainer.Size = UDim2.new(0, 500, 0, 600)
-mainContainer.Position = UDim2.new(0.5, -250, 0.5, -300)
-mainContainer.AnchorPoint = Vector2.new(0.5, 0.5)
-mainContainer.BackgroundColor3 = Color3.fromRGB(10, 15, 30)
-mainContainer.BackgroundTransparency = 0.05
+mainContainer.Position = UDim2.new(0.5, -250, 0.5, -300) -- Center of screen
+mainContainer.AnchorPoint = Vector2.new(0.5, 0.5) -- Center anchor
+mainContainer.BackgroundColor3 = Color3.fromRGB(15, 20, 35)
+mainContainer.BackgroundTransparency = 0.1
 mainContainer.BorderSizePixel = 0
-
--- Glass effect
-local glassEffect = Instance.new("Frame")
-glassEffect.Name = "GlassEffect"
-glassEffect.Size = UDim2.new(1, 0, 1, 0)
-glassEffect.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-glassEffect.BackgroundTransparency = 0.95
-glassEffect.BorderSizePixel = 0
 
 -- Container styling
 local containerCorner = Instance.new("UICorner")
@@ -63,63 +46,32 @@ containerStroke.Thickness = 2
 containerStroke.Transparency = 0.3
 containerStroke.Parent = mainContainer
 
--- Drop shadow
-local shadow = Instance.new("ImageLabel")
-shadow.Name = "Shadow"
-shadow.Image = "rbxassetid://5554236805"
-shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-shadow.ImageTransparency = 0.8
-shadow.ScaleType = Enum.ScaleType.Slice
-shadow.SliceCenter = Rect.new(23, 23, 277, 277)
-shadow.Size = UDim2.new(1, 40, 1, 40)
-shadow.Position = UDim2.new(0.5, -20, 0.5, -20)
-shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-shadow.BackgroundTransparency = 1
-shadow.ZIndex = -1
-
--- Header with gradient
+-- Header
 local header = Instance.new("Frame")
 header.Name = "Header"
-header.Size = UDim2.new(1, 0, 0, 80)
-header.BackgroundColor3 = Color3.fromRGB(15, 25, 50)
+header.Size = UDim2.new(1, 0, 0, 70)
+header.BackgroundColor3 = Color3.fromRGB(20, 30, 60)
 header.BorderSizePixel = 0
-
-local headerGradient = Instance.new("UIGradient")
-headerGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 40, 80)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 20, 40))
-})
-headerGradient.Rotation = 90
-headerGradient.Parent = header
 
 local headerCorner = Instance.new("UICorner")
 headerCorner.CornerRadius = UDim.new(0, 16)
 headerCorner.Parent = header
 
--- Header content
-local titleContainer = Instance.new("Frame")
-titleContainer.Name = "TitleContainer"
-titleContainer.Size = UDim2.new(1, -120, 1, 0)
-titleContainer.Position = UDim2.new(0, 20, 0, 0)
-titleContainer.BackgroundTransparency = 1
-
 local title = Instance.new("TextLabel")
 title.Name = "Title"
-title.Size = UDim2.new(1, 0, 0, 40)
-title.Position = UDim2.new(0, 0, 0, 10)
+title.Size = UDim2.new(1, -100, 1, 0)
+title.Position = UDim2.new(0, 20, 0, 0)
 title.BackgroundTransparency = 1
 title.Text = "🎣 FISH IT! HACKS"
 title.TextColor3 = Color3.fromRGB(100, 200, 255)
 title.TextSize = 28
 title.Font = Enum.Font.GothamBold
 title.TextXAlignment = Enum.TextXAlignment.Left
-title.TextStrokeTransparency = 0.8
-title.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 
 local subtitle = Instance.new("TextLabel")
 subtitle.Name = "Subtitle"
-subtitle.Size = UDim2.new(1, 0, 0, 20)
-subtitle.Position = UDim2.new(0, 0, 0, 50)
+subtitle.Size = UDim2.new(1, -100, 0, 20)
+subtitle.Position = UDim2.new(0, 20, 0, 40)
 subtitle.BackgroundTransparency = 1
 subtitle.Text = "Professional Fishing Assistant"
 subtitle.TextColor3 = Color3.fromRGB(180, 220, 255)
@@ -128,13 +80,13 @@ subtitle.Font = Enum.Font.Gotham
 subtitle.TextXAlignment = Enum.TextXAlignment.Left
 subtitle.TextTransparency = 0.3
 
--- Close button (elegant X)
+-- Close Button
 local closeButton = Instance.new("ImageButton")
 closeButton.Name = "CloseButton"
 closeButton.Size = UDim2.new(0, 40, 0, 40)
-closeButton.Position = UDim2.new(1, -50, 0.5, -20)
+closeButton.Position = UDim2.new(1, -20, 0.5, -20)
 closeButton.AnchorPoint = Vector2.new(1, 0.5)
-closeButton.BackgroundColor3 = Color3.fromRGB(30, 50, 90)
+closeButton.BackgroundColor3 = Color3.fromRGB(40, 60, 100)
 closeButton.BackgroundTransparency = 0.3
 closeButton.Image = "rbxassetid://3926305904"
 closeButton.ImageRectOffset = Vector2.new(284, 4)
@@ -145,17 +97,11 @@ local closeCorner = Instance.new("UICorner")
 closeCorner.CornerRadius = UDim.new(1, 0)
 closeCorner.Parent = closeButton
 
-local closeGlow = Instance.new("UIStroke")
-closeGlow.Color = Color3.fromRGB(100, 180, 255)
-closeGlow.Thickness = 2
-closeGlow.Transparency = 0.7
-closeGlow.Parent = closeButton
-
 -- Content Area
 local content = Instance.new("ScrollingFrame")
 content.Name = "Content"
-content.Size = UDim2.new(1, -40, 1, -100)
-content.Position = UDim2.new(0, 20, 0, 90)
+content.Size = UDim2.new(1, -40, 1, -90)
+content.Position = UDim2.new(0, 20, 0, 80)
 content.BackgroundTransparency = 1
 content.ScrollBarThickness = 6
 content.ScrollBarImageColor3 = Color3.fromRGB(60, 120, 220)
@@ -175,12 +121,6 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 12)
 mainCorner.Parent = mainSection
 
-local mainStroke = Instance.new("UIStroke")
-mainStroke.Color = Color3.fromRGB(40, 80, 160)
-mainStroke.Thickness = 1
-mainStroke.Transparency = 0.5
-mainStroke.Parent = mainSection
-
 local mainTitle = Instance.new("TextLabel")
 mainTitle.Name = "MainTitle"
 mainTitle.Size = UDim2.new(1, -20, 0, 40)
@@ -192,7 +132,7 @@ mainTitle.TextSize = 20
 mainTitle.Font = Enum.Font.GothamBold
 mainTitle.TextXAlignment = Enum.TextXAlignment.Left
 
--- Feature Toggle Function (Improved Design)
+-- Feature Toggle Function (Fixed and Neat)
 local function createFeatureToggle(featureName, description, icon, color, yPosition)
     local toggleFrame = Instance.new("Frame")
     toggleFrame.Name = featureName .. "Frame"
@@ -205,12 +145,6 @@ local function createFeatureToggle(featureName, description, icon, color, yPosit
     local frameCorner = Instance.new("UICorner")
     frameCorner.CornerRadius = UDim.new(0, 8)
     frameCorner.Parent = toggleFrame
-    
-    local frameStroke = Instance.new("UIStroke")
-    frameStroke.Color = Color3.fromRGB(50, 100, 180)
-    frameStroke.Thickness = 1
-    frameStroke.Transparency = 0.5
-    frameStroke.Parent = toggleFrame
     
     -- Icon
     local iconLabel = Instance.new("TextLabel")
@@ -227,7 +161,7 @@ local function createFeatureToggle(featureName, description, icon, color, yPosit
     -- Feature Info
     local featureInfo = Instance.new("Frame")
     featureInfo.Name = "FeatureInfo"
-    featureInfo.Size = UDim2.new(0.6, 0, 1, 0)
+    featureInfo.Size = UDim2.new(0.55, 0, 1, 0)
     featureInfo.Position = UDim2.new(0, 70, 0, 0)
     featureInfo.BackgroundTransparency = 1
     
@@ -253,17 +187,17 @@ local function createFeatureToggle(featureName, description, icon, color, yPosit
     featureDescLabel.Font = Enum.Font.Gotham
     featureDescLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Toggle Switch (Modern Design)
+    -- Toggle Switch (Neat and Clean)
     local toggleContainer = Instance.new("Frame")
     toggleContainer.Name = "ToggleContainer"
-    toggleContainer.Size = UDim2.new(0.25, 0, 1, 0)
-    toggleContainer.Position = UDim2.new(0.75, 0, 0, 0)
+    toggleContainer.Size = UDim2.new(0.3, 0, 1, 0)
+    toggleContainer.Position = UDim2.new(0.7, 0, 0, 0)
     toggleContainer.BackgroundTransparency = 1
     
     local toggleButton = Instance.new("TextButton")
     toggleButton.Name = "ToggleButton"
     toggleButton.Size = UDim2.new(0, 70, 0, 36)
-    toggleButton.Position = UDim2.new(1, -75, 0.5, -18)
+    toggleButton.Position = UDim2.new(1, -10, 0.5, -18)
     toggleButton.AnchorPoint = Vector2.new(1, 0.5)
     toggleButton.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
     toggleButton.Text = ""
@@ -272,12 +206,6 @@ local function createFeatureToggle(featureName, description, icon, color, yPosit
     local toggleButtonCorner = Instance.new("UICorner")
     toggleButtonCorner.CornerRadius = UDim.new(1, 0)
     toggleButtonCorner.Parent = toggleButton
-    
-    local toggleButtonStroke = Instance.new("UIStroke")
-    toggleButtonStroke.Color = Color3.fromRGB(80, 120, 200)
-    toggleButtonStroke.Thickness = 2
-    toggleButtonStroke.Transparency = 0.5
-    toggleButtonStroke.Parent = toggleButton
     
     local toggleKnob = Instance.new("Frame")
     toggleKnob.Name = "ToggleKnob"
@@ -291,16 +219,10 @@ local function createFeatureToggle(featureName, description, icon, color, yPosit
     toggleKnobCorner.CornerRadius = UDim.new(1, 0)
     toggleKnobCorner.Parent = toggleKnob
     
-    local toggleKnobGlow = Instance.new("UIStroke")
-    toggleKnobGlow.Color = Color3.fromRGB(255, 180, 180)
-    toggleKnobGlow.Thickness = 2
-    toggleKnobGlow.Transparency = 0.7
-    toggleKnobGlow.Parent = toggleKnob
-    
     local toggleStatus = Instance.new("TextLabel")
     toggleStatus.Name = "ToggleStatus"
     toggleStatus.Size = UDim2.new(1, 0, 0, 15)
-    toggleStatus.Position = UDim2.new(0, 0, 1, 8)
+    toggleStatus.Position = UDim2.new(0, 0, 1, 5)
     toggleStatus.BackgroundTransparency = 1
     toggleStatus.Text = "OFF"
     toggleStatus.TextColor3 = Color3.fromRGB(255, 120, 120)
@@ -332,26 +254,26 @@ local function createFeatureToggle(featureName, description, icon, color, yPosit
     }
 end
 
--- Create Main Features (Improved)
+-- Create Main Features
 local mainFeatures = {}
 local featureData = {
     {
         name = "AUTO FISHING",
-        desc = "Automatically catch fish without interaction",
+        desc = "Automatically catch fish",
         icon = "🤖",
         color = Color3.fromRGB(0, 200, 255),
         yPos = 60
     },
     {
         name = "BLATANT FISHING", 
-        desc = "Catch fish through obstacles and walls",
+        desc = "Catch through obstacles",
         icon = "⚡",
         color = Color3.fromRGB(255, 170, 0),
         yPos = 140
     },
     {
         name = "INSTANT FISHING",
-        desc = "Instant catch - no waiting time",
+        desc = "No waiting time",
         icon = "🚀",
         color = Color3.fromRGB(0, 230, 118),
         yPos = 220
@@ -380,12 +302,6 @@ settingsSection.BorderSizePixel = 0
 local settingsCorner = Instance.new("UICorner")
 settingsCorner.CornerRadius = UDim.new(0, 12)
 settingsCorner.Parent = settingsSection
-
-local settingsStroke = Instance.new("UIStroke")
-settingsStroke.Color = Color3.fromRGB(40, 80, 160)
-settingsStroke.Thickness = 1
-settingsStroke.Transparency = 0.5
-settingsStroke.Parent = settingsSection
 
 local settingsTitle = Instance.new("TextLabel")
 settingsTitle.Name = "SettingsTitle"
@@ -454,7 +370,7 @@ delayValue.TextXAlignment = Enum.TextXAlignment.Left
 local delaySlider = Instance.new("Frame")
 delaySlider.Name = "DelaySlider"
 delaySlider.Size = UDim2.new(0, 100, 0, 20)
-delaySlider.Position = UDim2.new(1, -110, 0.5, -10)
+delaySlider.Position = UDim2.new(1, -20, 0.5, -10)
 delaySlider.AnchorPoint = Vector2.new(1, 0.5)
 delaySlider.BackgroundColor3 = Color3.fromRGB(40, 60, 100)
 delaySlider.BorderSizePixel = 0
@@ -483,12 +399,6 @@ delayHandle.BorderSizePixel = 0
 local handleCorner = Instance.new("UICorner")
 handleCorner.CornerRadius = UDim.new(1, 0)
 handleCorner.Parent = delayHandle
-
-local handleGlow = Instance.new("UIStroke")
-handleGlow.Color = Color3.fromRGB(100, 180, 255)
-handleGlow.Thickness = 2
-handleGlow.Transparency = 0.5
-handleGlow.Parent = delayHandle
 
 -- No Animation Toggle
 local noAnimFrame = Instance.new("Frame")
@@ -546,7 +456,7 @@ noAnimDesc.TextXAlignment = Enum.TextXAlignment.Left
 local noAnimToggle = Instance.new("TextButton")
 noAnimToggle.Name = "NoAnimToggle"
 noAnimToggle.Size = UDim2.new(0, 70, 0, 36)
-noAnimToggle.Position = UDim2.new(1, -75, 0.5, -18)
+noAnimToggle.Position = UDim2.new(1, -20, 0.5, -18)
 noAnimToggle.AnchorPoint = Vector2.new(1, 0.5)
 noAnimToggle.BackgroundColor3 = Color3.fromRGB(60, 80, 120)
 noAnimToggle.Text = ""
@@ -555,12 +465,6 @@ noAnimToggle.AutoButtonColor = false
 local noAnimToggleCorner = Instance.new("UICorner")
 noAnimToggleCorner.CornerRadius = UDim.new(1, 0)
 noAnimToggleCorner.Parent = noAnimToggle
-
-local noAnimToggleStroke = Instance.new("UIStroke")
-noAnimToggleStroke.Color = Color3.fromRGB(80, 120, 200)
-noAnimToggleStroke.Thickness = 2
-noAnimToggleStroke.Transparency = 0.5
-noAnimToggleStroke.Parent = noAnimToggle
 
 local noAnimKnob = Instance.new("Frame")
 noAnimKnob.Name = "NoAnimKnob"
@@ -577,7 +481,7 @@ noAnimKnobCorner.Parent = noAnimKnob
 local noAnimStatus = Instance.new("TextLabel")
 noAnimStatus.Name = "NoAnimStatus"
 noAnimStatus.Size = UDim2.new(1, 0, 0, 15)
-noAnimStatus.Position = UDim2.new(0, 0, 1, 8)
+noAnimStatus.Position = UDim2.new(0, 0, 1, 5)
 noAnimStatus.BackgroundTransparency = 1
 noAnimStatus.Text = "OFF"
 noAnimStatus.TextColor3 = Color3.fromRGB(255, 120, 120)
@@ -585,56 +489,9 @@ noAnimStatus.TextSize = 12
 noAnimStatus.Font = Enum.Font.GothamBold
 noAnimStatus.TextXAlignment = Enum.TextXAlignment.Center
 
--- Status Panel
-local statusPanel = Instance.new("Frame")
-statusPanel.Name = "StatusPanel"
-statusPanel.Size = UDim2.new(1, 0, 0, 80)
-statusPanel.Position = UDim2.new(0, 0, 0, 520)
-statusPanel.BackgroundColor3 = Color3.fromRGB(20, 30, 60)
-statusPanel.BackgroundTransparency = 0.1
-statusPanel.BorderSizePixel = 0
-
-local statusCorner = Instance.new("UICorner")
-statusCorner.CornerRadius = UDim.new(0, 12)
-statusCorner.Parent = statusPanel
-
-local statusStroke = Instance.new("UIStroke")
-statusStroke.Color = Color3.fromRGB(40, 80, 160)
-statusStroke.Thickness = 1
-statusStroke.Transparency = 0.5
-statusStroke.Parent = statusPanel
-
-local statusTitle = Instance.new("TextLabel")
-statusTitle.Name = "StatusTitle"
-statusTitle.Size = UDim2.new(1, -20, 0, 30)
-statusTitle.Position = UDim2.new(0, 15, 0, 10)
-statusTitle.BackgroundTransparency = 1
-statusTitle.Text = "📊 SYSTEM STATUS"
-statusTitle.TextColor3 = Color3.fromRGB(100, 200, 255)
-statusTitle.TextSize = 18
-statusTitle.Font = Enum.Font.GothamBold
-statusTitle.TextXAlignment = Enum.TextXAlignment.Left
-
-local statusText = Instance.new("TextLabel")
-statusText.Name = "StatusText"
-statusText.Size = UDim2.new(1, -30, 0, 40)
-statusText.Position = UDim2.new(0, 15, 0, 40)
-statusText.BackgroundTransparency = 1
-statusText.Text = "Ready to fish! 🎣\nPress F6 to hide/show"
-statusText.TextColor3 = Color3.fromRGB(180, 220, 255)
-statusText.TextSize = 14
-statusText.Font = Enum.Font.Gotham
-statusText.TextXAlignment = Enum.TextXAlignment.Left
-statusText.TextYAlignment = Enum.TextYAlignment.Top
-statusText.TextWrapped = true
-
 -- Assemble UI
-glassEffect.Parent = mainContainer
-shadow.Parent = mainContainer
-
-subtitle.Parent = titleContainer
-title.Parent = titleContainer
-titleContainer.Parent = header
+subtitle.Parent = header
+title.Parent = header
 closeButton.Parent = header
 header.Parent = mainContainer
 
@@ -663,20 +520,16 @@ noAnimFrame.Parent = settingsSection
 
 settingsSection.Parent = content
 
-statusText.Parent = statusPanel
-statusTitle.Parent = statusPanel
-statusPanel.Parent = content
-
 content.Parent = mainContainer
 mainContainer.Parent = screenGui
 screenGui.Parent = playerGui
 
--- Update status function
+-- Status update function
 local function updateStatus(message)
-    statusText.Text = message
+    print("Status:", message)
 end
 
--- Toggle animation with smooth effects
+-- Toggle animation function
 local function animateToggle(toggleData, enabled)
     if enabled then
         -- Move knob to right
@@ -692,17 +545,6 @@ local function animateToggle(toggleData, enabled)
         toggleData.status.Text = "ON"
         toggleData.status.TextColor3 = Color3.fromRGB(80, 255, 140)
         
-        -- Icon glow effect
-        TweenService:Create(toggleData.icon, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            TextColor3 = toggleData.color,
-            TextSize = 26
-        }):Play()
-        
-        task.wait(0.1)
-        TweenService:Create(toggleData.icon, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            TextSize = 24
-        }):Play()
-        
     else
         -- Move knob to left
         TweenService:Create(toggleData.knob, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -716,23 +558,7 @@ local function animateToggle(toggleData, enabled)
         
         toggleData.status.Text = "OFF"
         toggleData.status.TextColor3 = Color3.fromRGB(255, 120, 120)
-        
-        -- Icon dim effect
-        TweenService:Create(toggleData.icon, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            TextColor3 = Color3.fromRGB(100, 100, 150)
-        }):Play()
     end
-    
-    -- Button press animation
-    TweenService:Create(toggleData.button, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 66, 0, 34)
-        }):Play()
-        
-    task.wait(0.1)
-    
-    TweenService:Create(toggleData.button, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 70, 0, 36)
-        }):Play()
 end
 
 -- Setup main feature toggles
@@ -741,32 +567,13 @@ for featureName, toggleData in pairs(mainFeatures) do
         toggleData.enabled = not toggleData.enabled
         animateToggle(toggleData, toggleData.enabled)
         
-        -- Prepare settings
-        local settings = {
-            AutoFish = false,
-            BlantantFish = false,
-            InstantFish = false,
-            NoAnimation = false,
-            CatchDelay = 0.5
-        }
-        
-        -- Update specific feature
-        if featureName == "AUTO FISHING" then
-            settings.AutoFish = toggleData.enabled
-        elseif featureName == "BLATANT FISHING" then
-            settings.BlantantFish = toggleData.enabled
-        elseif featureName == "INSTANT FISHING" then
-            settings.InstantFish = toggleData.enabled
-        end
-        
         -- Send to server
         fishingRemote:FireServer("ToggleFeature", {
             Feature = featureName,
-            Enabled = toggleData.enabled,
-            Settings = settings
+            Enabled = toggleData.enabled
         })
         
-        updateStatus(featureName .. " " .. (toggleData.enabled and "ENABLED 🎣" or "disabled"))
+        updateStatus(featureName .. " " .. (toggleData.enabled and "ENABLED" or "disabled"))
     end)
 end
 
@@ -775,7 +582,6 @@ local noAnimEnabled = false
 noAnimToggle.MouseButton1Click:Connect(function()
     noAnimEnabled = not noAnimEnabled
     
-    -- Animate no animation toggle
     if noAnimEnabled then
         TweenService:Create(noAnimKnob, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             BackgroundColor3 = Color3.fromRGB(170, 0, 255),
@@ -789,12 +595,6 @@ noAnimToggle.MouseButton1Click:Connect(function()
         noAnimStatus.Text = "ON"
         noAnimStatus.TextColor3 = Color3.fromRGB(170, 0, 255)
         
-        -- Icon glow
-        TweenService:Create(noAnimIcon, TweenInfo.new(0.5, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            TextColor3 = Color3.fromRGB(200, 100, 255),
-            TextSize = 26
-        }):Play()
-        
     else
         TweenService:Create(noAnimKnob, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
             BackgroundColor3 = Color3.fromRGB(255, 80, 80),
@@ -807,21 +607,15 @@ noAnimToggle.MouseButton1Click:Connect(function()
         
         noAnimStatus.Text = "OFF"
         noAnimStatus.TextColor3 = Color3.fromRGB(255, 120, 120)
-        
-        -- Icon dim
-        TweenService:Create(noAnimIcon, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            TextColor3 = Color3.fromRGB(170, 0, 255)
-        }):Play()
     end
     
     -- Send to server
     fishingRemote:FireServer("ToggleFeature", {
         Feature = "NO ANIMATION",
-        Enabled = noAnimEnabled,
-        Settings = {NoAnimation = noAnimEnabled}
+        Enabled = noAnimEnabled
     })
     
-    updateStatus("No Animation " .. (noAnimEnabled and "ENABLED 🎬" or "disabled"))
+    updateStatus("No Animation " .. (noAnimEnabled and "ENABLED" or "disabled"))
 end)
 
 -- Delay slider functionality
@@ -877,58 +671,31 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Toggle UI function with animations
+-- Toggle UI function
 local function toggleUI()
     screenGui.Enabled = not screenGui.Enabled
     
     if screenGui.Enabled then
-        -- Fade in overlay
-        overlay.BackgroundTransparency = 0.7
-        TweenService:Create(overlay, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 0.5
-        }):Play()
-        
-        -- Scale in animation with bounce
+        -- Scale in animation
         mainContainer.Size = UDim2.new(0, 0, 0, 0)
-        mainContainer.Position = UDim2.new(0.5, 0, 0.5, 0)
-        
-        TweenService:Create(mainContainer, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-            Size = UDim2.new(0, 500, 0, 600),
-            Position = UDim2.new(0.5, -250, 0.5, -300)
+        TweenService:Create(mainContainer, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+            Size = UDim2.new(0, 500, 0, 600)
         }):Play()
         
-        updateStatus("🎣 Fishing Hacks Ready!\nToggle features to begin...")
+        updateStatus("Fishing Hacks Ready!")
         
     else
-        -- Fade out overlay
-        TweenService:Create(overlay, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-            BackgroundTransparency = 0.7
-        }):Play()
-        
         -- Scale out animation
-        TweenService:Create(mainContainer, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-            Size = UDim2.new(0, 0, 0, 0),
-            Position = UDim2.new(0.5, 0, 0.5, 0)
+        TweenService:Create(mainContainer, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 0, 0, 0)
         }):Play()
         
-        task.wait(0.4)
-        screenGui.Enabled = false
+        task.wait(0.3)
     end
 end
 
 -- Close button
 closeButton.MouseButton1Click:Connect(function()
-    -- Button press animation
-    TweenService:Create(closeButton, TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0, 36, 0, 36)
-    }):Play()
-    
-    task.wait(0.1)
-    
-    TweenService:Create(closeButton, TweenInfo.new(0.1, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Size = UDim2.new(0, 40, 0, 40)
-    }):Play()
-    
     toggleUI()
 end)
 
@@ -947,4 +714,5 @@ end
 -- Initialize delay slider
 updateDelayValue(delaySlider.AbsolutePosition.X + (delaySlider.AbsoluteSize.X * 0.5))
 
-print("🎣 Professional Fishing Hack UI loaded! Press F6 to toggle.")
+print("🎣 Fishing Hack UI loaded! Press F6 to toggle.")
+print("UI Position: Centered (50%, 50%)")
