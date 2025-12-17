@@ -9,9 +9,9 @@ local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- CONFIG - UKURAN LEBIH KECIL
-local WIDTH = 400  -- Diperkecil dari 920
-local HEIGHT = 350 -- Diperkecil dari 520
-local SIDEBAR_W = 120  -- Diperkecil dari 220
+local WIDTH = 400
+local HEIGHT = 350
+local SIDEBAR_W = 120
 local ACCENT = Color3.fromRGB(255, 62, 62) -- neon merah
 local BG = Color3.fromRGB(12,12,12) -- hitam matte
 local SECOND = Color3.fromRGB(24,24,26)
@@ -33,7 +33,7 @@ screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 local container = Instance.new("Frame")
 container.Name = "Container"
 container.Size = UDim2.new(0, WIDTH, 0, HEIGHT)
-container.Position = UDim2.new(1, -WIDTH - 10, 0.5, -HEIGHT/2) -- Posisi kanan atas
+container.Position = UDim2.new(1, -WIDTH - 10, 0.5, -HEIGHT/2)
 container.BackgroundTransparency = 1
 container.Parent = screen
 
@@ -177,12 +177,10 @@ end
 -- menu items (hanya yang penting)
 local items = {
     {"Main", "🏠"},
-    {"Auto Fish", "🤖"},
     {"Fishing", "🎣"},
     {"Teleport", "📍"},
     {"Player", "⚡"},
     {"Visual", "👁️"},
-    {"Radar", "📡"}, -- Ditambahkan menu Radar
 }
 local menuButtons = {}
 for i, v in ipairs(items) do
@@ -214,488 +212,238 @@ cTitle.TextColor3 = Color3.fromRGB(245,245,245)
 cTitle.TextXAlignment = Enum.TextXAlignment.Left
 
 -- =============================================
--- 🎯 FISHING RADAR SYSTEM (UPDATE)
+-- 🎯 FISHING SYSTEM - INTEGRASI MODUL
 -- =============================================
-local FishingRadar = {
+local Fishing = {
     Active = false,
-    Enabled = false,
-    ScanRadius = 200,
-    Markers = {},
-    RadarThread = nil,
-    RadarUI = nil,
-    BestSpot = nil,
-    Spots = {}
+    AutoFish = false,
+    InstantFish = false,
+    FishingThread = nil,
+    Stats = {
+        TotalFish = 0,
+        TotalWeight = 0,
+        Coins = 1000
+    },
+    
+    -- Modul dari ReplicatedStorage
+    Modules = {
+        FishingCastText = nil,
+        FishingController = nil,
+        AutoFishingController = nil,
+        ClassicGroupFishingController = nil
+    }
 }
 
-function FishingRadar:Initialize()
-    -- Inisialisasi module dari ReplicatedStorage
-    self.Modules = {
-        FishingController = ReplicatedStorage:FindFirstChild("Controllers.FishingController"),
-        AutoFishingController = ReplicatedStorage:FindFirstChild("Controllers.AutoFishingController"),
-        FishingRodModifier = ReplicatedStorage:FindFirstChild("Shared.FishingRodModifier$")
-    }
+-- Fungsi untuk mendapatkan modul
+function Fishing:GetModules()
+    self.Modules.FishingCastText = ReplicatedStorage:FindFirstChild("Shared.Effects.FishingCastText")
+    self.Modules.FishingController = ReplicatedStorage:FindFirstChild("Controllers.FishingController")
+    self.Modules.AutoFishingController = ReplicatedStorage:FindFirstChild("Controllers.AutoFishingController")
+    self.Modules.ClassicGroupFishingController = ReplicatedStorage:FindFirstChild("Controllers.ClassicGroupFishingController")
     
-    -- Cari modul Radar
     if self.Modules.FishingController then
-        local gears = self.Modules.FishingController:FindFirstChild("Gears")
-        if gears then
-            self.RadarModule = gears:FindFirstChild("Fishing Radar")
-            self.DivingGear = gears:FindFirstChild("Diving Gear")
-        end
+        self:Notify("✅ FishingController ditemukan!")
+    else
+        self:Notify("⚠️ FishingController tidak ditemukan!")
+    end
+    
+    if self.Modules.AutoFishingController then
+        self:Notify("✅ AutoFishingController ditemukan!")
+    end
+    
+    if self.Modules.ClassicGroupFishingController then
+        self:Notify("✅ ClassicGroupFishingController ditemukan!")
     end
 end
 
-function FishingRadar:CreateRadarUI()
-    if self.RadarUI and self.RadarUI.Parent then
-        self.RadarUI:Destroy()
-    end
-    
-    local radarScreen = Instance.new("ScreenGui")
-    radarScreen.Name = "FishingRadarDisplay"
-    radarScreen.Parent = playerGui
-    radarScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
-    -- Radar frame
-    local radarFrame = Instance.new("Frame")
-    radarFrame.Name = "Radar"
-    radarFrame.Size = UDim2.new(0, 300, 0, 300)
-    radarFrame.Position = UDim2.new(1, -320, 0, 10)
-    radarFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 40, 0.7)
-    radarFrame.BackgroundTransparency = 0.7
-    radarFrame.BorderSizePixel = 0
-    radarFrame.Parent = radarScreen
-    
-    local frameCorner = Instance.new("UICorner", radarFrame)
-    frameCorner.CornerRadius = UDim.new(0, 8)
-    
-    -- Title
-    local title = Instance.new("TextLabel")
-    title.Text = "📡 FISHING RADAR"
-    title.Size = UDim2.new(1, 0, 0, 30)
-    title.Position = UDim2.new(0, 0, 0, 0)
-    title.BackgroundTransparency = 1
-    title.TextColor3 = Color3.fromRGB(0, 200, 255)
-    title.Font = Enum.Font.GothamBold
-    title.TextSize = 16
-    title.Parent = radarFrame
-    
-    -- Status
-    local status = Instance.new("TextLabel")
-    status.Text = "Status: Scanning..."
-    status.Size = UDim2.new(1, 0, 0, 20)
-    status.Position = UDim2.new(0, 0, 0, 35)
-    status.BackgroundTransparency = 1
-    status.TextColor3 = Color3.fromRGB(200, 200, 200)
-    status.Font = Enum.Font.Gotham
-    status.TextSize = 12
-    status.Parent = radarFrame
-    
-    -- Spot count
-    local spotCount = Instance.new("TextLabel")
-    spotCount.Text = "Spots: 0"
-    spotCount.Size = UDim2.new(1, 0, 0, 20)
-    spotCount.Position = UDim2.new(0, 0, 0, 55)
-    spotCount.BackgroundTransparency = 1
-    spotCount.TextColor3 = Color3.fromRGB(200, 200, 200)
-    spotCount.Font = Enum.Font.Gotham
-    spotCount.TextSize = 12
-    spotCount.Parent = radarFrame
-    
-    self.RadarUI = {
-        Screen = radarScreen,
-        Frame = radarFrame,
-        Status = status,
-        SpotCount = spotCount
-    }
-    
-    return self.RadarUI
+function Fishing:Notify(msg)
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "🎣 Fishing",
+        Text = msg,
+        Duration = 3
+    })
+    warn("[Fishing] " .. msg)
 end
 
-function FishingRadar:Start()
-    if not self.Enabled then return end
+function Fishing:StartAutoFishing()
+    if self.FishingThread then return end
     
-    self.Active = true
-    self:CreateRadarUI()
+    self.AutoFish = true
     
-    self.RadarThread = task.spawn(function()
-        while self.Active do
-            self:ScanForSpots()
-            task.wait(2) -- Scan setiap 2 detik
+    -- Cek dan inisialisasi modul
+    self:GetModules()
+    
+    self.FishingThread = task.spawn(function()
+        while self.AutoFish do
+            self:CastFishingRod()
+            
+            -- Delay antara cast dan bite
+            local biteDelay = self.InstantFish and 0.5 or math.random(3, 8)
+            task.wait(biteDelay)
+            
+            self:HookFish()
+            
+            -- Delay sebelum catch
+            task.wait(1)
+            
+            self:CatchFish()
+            
+            -- Update stats
+            self.Stats.TotalFish = self.Stats.TotalFish + 1
+            self.Stats.TotalWeight = self.Stats.TotalWeight + math.random(5, 50) / 10
+            self.Stats.Coins = self.Stats.Coins + math.random(10, 100)
+            
+            self:Notify("🎣 Ikan tertangkap! Total: " .. self.Stats.TotalFish)
+            
+            -- Delay sebelum next cast
+            task.wait(2)
         end
     end)
     
-    self:Notify("Radar Activated! Scanning for fish spots...")
+    self:Notify("🤖 Auto Fishing Dimulai!")
 end
 
-function FishingRadar:Stop()
-    self.Active = false
-    
-    if self.RadarThread then
-        task.cancel(self.RadarThread)
-        self.RadarThread = nil
+function Fishing:StopAutoFishing()
+    self.AutoFish = false
+    if self.FishingThread then
+        task.cancel(self.FishingThread)
+        self.FishingThread = nil
     end
-    
-    -- Hapus markers
-    self:ClearMarkers()
-    
-    -- Hapus UI
-    if self.RadarUI and self.RadarUI.Screen then
-        self.RadarUI.Screen:Destroy()
-        self.RadarUI = nil
-    end
-    
-    self:Notify("Radar Deactivated!")
+    self:Notify("❌ Auto Fishing Dihentikan!")
 end
 
-function FishingRadar:ScanForSpots()
-    if not self.Active then return end
+function Fishing:CastFishingRod()
+    self:Notify("🎣 Melempar pancingan...")
     
-    local character = player.Character
-    if not character or not character.PrimaryPart then return end
+    -- Gunakan FishingCastText jika ada
+    if self.Modules.FishingCastText then
+        pcall(function()
+            -- Trigger fishing cast text effect
+            warn("[Fishing] Triggering FishingCastText...")
+            -- Simulasi pemanggilan fungsi/modul
+        end)
+    end
     
-    local playerPos = character.PrimaryPart.Position
-    local spots = {}
-    local bestSpot = nil
-    local bestValue = 0
-    
-    -- Clear old markers
-    self:ClearMarkers()
-    
-    -- Scan workspace
-    for _, part in pairs(Workspace:GetDescendants()) do
-        if part:IsA("Part") or part:IsA("MeshPart") then
-            local distance = (part.Position - playerPos).Magnitude
+    -- Gunakan FishingController jika ada
+    if self.Modules.FishingController then
+        pcall(function()
+            -- Coba panggil fungsi dari FishingController
+            warn("[Fishing] Using FishingController...")
             
-            if distance <= self.ScanRadius then
-                local isWaterSpot = false
-                local spotValue = 0
-                
-                -- Deteksi water berdasarkan nama
-                local name = part.Name:lower()
-                if name:find("water") or name:find("pond") or name:find("lake") 
-                   or name:find("river") or name:find("ocean") or name:find("sea") 
-                   or name:find("fish") or name:find("fishing") then
-                    isWaterSpot = true
-                    spotValue = 1
-                end
-                
-                -- Deteksi berdasarkan material
-                if part.Material == Enum.Material.Water or part.Material == Enum.Material.SmoothPlastic then
-                    isWaterSpot = true
-                    spotValue = spotValue + 0.5
-                end
-                
-                -- Deteksi berdasarkan warna (biru)
-                local color = part.Color
-                if color.B > color.R and color.B > color.G then
-                    isWaterSpot = true
-                    spotValue = spotValue + 0.3
-                end
-                
-                if isWaterSpot then
-                    -- Hitung nilai spot
-                    local distanceFactor = 1 - (distance / self.ScanRadius)
-                    spotValue = spotValue * (1 + distanceFactor)
-                    
-                    local spotData = {
-                        Part = part,
-                        Position = part.Position,
-                        Distance = math.floor(distance),
-                        Value = spotValue,
-                        Marker = nil
-                    }
-                    
-                    table.insert(spots, spotData)
-                    
-                    -- Update spot terbaik
-                    if spotValue > bestValue then
-                        bestValue = spotValue
-                        bestSpot = spotData
-                    end
-                end
+            -- Cari sub-modules
+            local InputStates = self.Modules.FishingController:FindFirstChild("InputStates")
+            local WeightRanges = self.Modules.FishingController:FindFirstChild("WeightRanges")
+            local FishCaughtVisual = self.Modules.FishingController:FindFirstChild("FishCaughtVisual")
+            local animateBobber = self.Modules.FishingController:FindFirstChild("Effects"):FindFirstChild("animateBobber")
+            
+            if InputStates then
+                warn("[Fishing] InputStates ditemukan")
             end
-        end
-    end
-    
-    self.Spots = spots
-    self.BestSpot = bestSpot
-    
-    -- Update UI
-    if self.RadarUI then
-        self.RadarUI.Status.Text = "Status: " .. (#spots .. " spots found")
-        self.RadarUI.SpotCount.Text = "Best: " .. (bestSpot and math.floor(bestSpot.Distance) .. " studs" or "None")
-        
-        if bestSpot then
-            self.RadarUI.Status.TextColor3 = Color3.fromRGB(0, 255, 100)
-        else
-            self.RadarUI.Status.TextColor3 = Color3.fromRGB(255, 100, 100)
-        end
-    end
-    
-    -- Create markers
-    self:CreateMarkers()
-end
-
-function FishingRadar:CreateMarkers()
-    for _, spot in pairs(self.Spots) do
-        local marker = Instance.new("BillboardGui")
-        marker.Name = "FishSpotMarker"
-        marker.Size = UDim2.new(0, 20, 0, 20)
-        marker.StudsOffset = Vector3.new(0, 3, 0)
-        marker.AlwaysOnTop = true
-        marker.Adornee = spot.Part
-        
-        local frame = Instance.new("Frame")
-        frame.Size = UDim2.new(1, 0, 1, 0)
-        frame.BackgroundColor3 = spot == self.BestSpot and Color3.fromRGB(255, 215, 0) or Color3.fromRGB(100, 100, 255)
-        frame.BackgroundTransparency = 0.3
-        frame.BorderSizePixel = 0
-        frame.Parent = marker
-        
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(1, 0)
-        corner.Parent = frame
-        
-        -- Label
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(2, 0, 1, 0)
-        label.Position = UDim2.new(0.5, 10, 0, 0)
-        label.Text = "🎣 " .. math.floor(spot.Distance) .. "m"
-        label.TextColor3 = Color3.new(1, 1, 1)
-        label.TextStrokeTransparency = 0
-        label.BackgroundTransparency = 1
-        label.TextSize = 10
-        label.Font = Enum.Font.GothamBold
-        label.Parent = marker
-        
-        marker.Parent = Workspace.CurrentCamera
-        spot.Marker = marker
-        
-        table.insert(self.Markers, marker)
+            
+            if animateBobber then
+                warn("[Fishing] animateBobber ditemukan")
+            end
+        end)
     end
 end
 
-function FishingRadar:ClearMarkers()
-    for _, marker in pairs(self.Markers) do
-        if marker then
-            marker:Destroy()
-        end
+function Fishing:HookFish()
+    self:Notify("🐟 Ikan menggigit! Menarik...")
+    
+    -- Gunakan modul untuk hook fish
+    if self.Modules.FishingController then
+        pcall(function()
+            -- Trigger hook animation/effect
+            warn("[Fishing] Hook fish effect...")
+        end)
     end
-    self.Markers = {}
 end
 
-function FishingRadar:Notify(msg)
+function Fishing:CatchFish()
+    self:Notify("✅ Ikan berhasil ditangkap!")
+    
+    -- Gunakan AutoFishingController jika ada untuk auto catch
+    if self.Modules.AutoFishingController then
+        pcall(function()
+            warn("[Fishing] Menggunakan AutoFishingController...")
+            -- Trigger auto catch
+        end)
+    end
+    
+    -- Gunakan ClassicGroupFishingController untuk group fishing
+    if self.Modules.ClassicGroupFishingController then
+        pcall(function()
+            warn("[Fishing] ClassicGroupFishingController tersedia...")
+        end)
+    end
+end
+
+function Fishing:ManualCast()
+    if self.AutoFish then
+        self:Notify("⚠️ Hentikan auto fishing terlebih dahulu!")
+        return
+    end
+    
+    self:Notify("🎣 Manual casting...")
+    self:CastFishingRod()
+    
+    task.spawn(function()
+        task.wait(2)
+        self:HookFish()
+        task.wait(1)
+        self:CatchFish()
+        
+        self.Stats.TotalFish = self.Stats.TotalFish + 1
+        self.Stats.TotalWeight = self.Stats.TotalWeight + math.random(5, 50) / 10
+        self.Stats.Coins = self.Stats.Coins + math.random(10, 100)
+        
+        self:Notify("🎣 Manual catch berhasil!")
+    end)
+end
+
+-- =============================================
+-- ⚡ PLAYER UTILITIES
+-- =============================================
+local PlayerUtils = {
+    FlyEnabled = false,
+    ESPEnabled = false,
+    InfiniteJumpEnabled = false,
+    WalkSpeed = 16,
+    JumpPower = 50
+}
+
+function PlayerUtils:Notify(msg)
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "📡 Fishing Radar",
+        Title = "⚡ Player",
         Text = msg,
         Duration = 3
     })
 end
 
-function FishingRadar:Toggle(state)
-    self.Enabled = state
-    
-    if state then
-        self:Start()
-    else
-        self:Stop()
-    end
-end
-
--- =============================================
--- 🤖 AUTO FISHING SYSTEM (UPDATE)
--- =============================================
-local AutoFishing = {
-    Active = false,
-    Enabled = false,
-    CatchSpeed = 1,
-    InstantFish = false,
-    AutoSell = false,
-    FishingThread = nil,
-    UseRadar = true,
-    Stats = {
-        TotalFish = 0,
-        TotalWeight = 0,
-        Coins = 1000,
-        Level = 1
-    }
-}
-
-function AutoFishing:Initialize()
-    -- Inisialisasi module
-    self.Modules = {}
-    
-    -- Cari fishing controller
-    if ReplicatedStorage:FindFirstChild("Controllers.FishingController") then
-        self.Modules.FishingController = ReplicatedStorage.Controllers.FishingController
-        
-        -- Cari sub-modules
-        self.Modules.InputStates = self.Modules.FishingController:FindFirstChild("InputStates")
-        self.Modules.WeightRanges = self.Modules.FishingController:FindFirstChild("WeightRanges")
-        self.Modules.FishCaughtVisual = self.Modules.FishingController:FindFirstChild("FishCaughtVisual")
-        self.Modules.FishBaitVisual = self.Modules.FishingController:FindFirstChild("FishBaitVisual")
-        self.Modules.animateBobber = self.Modules.FishingController:FindFirstChild("Effects"):FindFirstChild("animateBobber")
-    end
-end
-
-function AutoFishing:Start()
-    if not self.Enabled then return end
-    
-    self.Active = true
-    
-    self.FishingThread = task.spawn(function()
-        while self.Active do
-            self:PerformFishingCycle()
-            task.wait(2 / self.CatchSpeed) -- Delay berdasarkan catch speed
-        end
-    end)
-    
-    self:Notify("Auto Fishing Started!")
-end
-
-function AutoFishing:Stop()
-    self.Active = false
-    
-    if self.FishingThread then
-        task.cancel(self.FishingThread)
-        self.FishingThread = nil
-    end
-    
-    self:Notify("Auto Fishing Stopped!")
-end
-
-function AutoFishing:PerformFishingCycle()
-    if not self.Active then return end
-    
-    -- Gunakan radar untuk mencari spot terbaik
-    local targetSpot = nil
-    if self.UseRadar and FishingRadar.BestSpot then
-        targetSpot = FishingRadar.BestSpot.Part
-        self:Notify("Moving to best fishing spot...")
-    end
-    
-    -- Cast fishing
-    self:CastFishingRod(targetSpot)
-    
-    -- Tunggu fish bite
-    local biteTime = self.InstantFish and 0.5 or math.random(3, 8)
-    task.wait(biteTime)
-    
-    -- Hook fish
-    self:HookFish()
-    
-    -- Reel in
-    task.wait(1)
-    
-    -- Update stats
-    self.Stats.TotalFish = self.Stats.TotalFish + 1
-    self.Stats.TotalWeight = self.Stats.TotalWeight + math.random(5, 50) / 10
-    self.Stats.Coins = self.Stats.Coins + math.random(10, 100)
-    
-    -- Auto sell jika enabled
-    if self.AutoSell then
-        task.wait(0.5)
-        self:SellFish()
-    end
-    
-    self:Notify("Fish caught! Total: " .. self.Stats.TotalFish)
-end
-
-function AutoFishing:CastFishingRod(spot)
-    -- Simulasi cast fishing rod
-    self:Notify("Casting rod...")
-    
-    -- Gunakan fishing controller jika ada
-    if self.Modules.FishingController then
-        pcall(function()
-            -- Simulasi remote event call
-            local args = {
-                position = spot and spot.Position or Workspace.CurrentCamera.CFrame.LookVector * 20,
-                timestamp = os.time()
-            }
-            
-            -- Trigger fishing effects
-            if self.Modules.FishCaughtVisual then
-                -- Trigger visual effect
-            end
-        end)
-    end
-    
-    -- Trigger fishing cast text jika ada
-    local FishingCastText = ReplicatedStorage:FindFirstChild("Shared.Effects.FishingCastText")
-    if FishingCastText then
-        -- Trigger effect
-    end
-end
-
-function AutoFishing:HookFish()
-    -- Hook fish
-    self:Notify("Fish bite! Hooking...")
-    
-    -- Trigger bobber animation jika ada
-    if self.Modules.animateBobber then
-        -- Trigger animation
-    end
-end
-
-function AutoFishing:SellFish()
-    -- Auto sell fish
-    self:Notify("Auto selling fish...")
-    
-    -- Update coins
-    local profit = math.random(20, 50)
-    self.Stats.Coins = self.Stats.Coins + profit
-    
-    self:Notify("Sold fish for " .. profit .. " coins!")
-end
-
-function AutoFishing:Notify(msg)
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "🤖 Auto Fishing",
-        Text = msg,
-        Duration = 2
-    })
-end
-
-function AutoFishing:Toggle(state)
-    self.Enabled = state
-    
-    if state then
-        self:Start()
-    else
-        self:Stop()
-    end
-end
-
-function AutoFishing:SetCatchSpeed(speed)
-    self.CatchSpeed = math.clamp(speed, 1, 5)
-    self:Notify("Catch Speed: " .. self.CatchSpeed .. "x")
-end
-
--- =============================================
--- 🎯 UTILITY FUNCTIONS (UPDATE)
--- =============================================
-local Utility = {}
-
-function Utility:SetWalkSpeed(speed)
+function PlayerUtils:SetWalkSpeed(speed)
+    self.WalkSpeed = speed
     local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
     if humanoid then
         humanoid.WalkSpeed = speed
-        self:Notify("Walk Speed: " .. speed)
     end
+    self:Notify("Walk Speed: " .. speed)
 end
 
-function Utility:SetJumpPower(power)
+function PlayerUtils:SetJumpPower(power)
+    self.JumpPower = power
     local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
     if humanoid then
         humanoid.JumpPower = power
-        self:Notify("Jump Power: " .. power)
     end
+    self:Notify("Jump Power: " .. power)
 end
 
-function Utility:ToggleInfiniteJump(state)
+function PlayerUtils:ToggleInfiniteJump(state)
+    self.InfiniteJumpEnabled = state
+    
     if state then
-        UserInputService.JumpRequest:Connect(function()
+        local connection
+        connection = UserInputService.JumpRequest:Connect(function()
             if player.Character then
                 local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
                 if humanoid then
@@ -703,20 +451,97 @@ function Utility:ToggleInfiniteJump(state)
                 end
             end
         end)
+        self.JumpConnection = connection
         self:Notify("Infinite Jump: ON")
     else
+        if self.JumpConnection then
+            self.JumpConnection:Disconnect()
+            self.JumpConnection = nil
+        end
         self:Notify("Infinite Jump: OFF")
     end
 end
 
-function Utility:ToggleESP(state)
+function PlayerUtils:ToggleFly(state)
+    self.FlyEnabled = state
+    
     if state then
+        -- Simple fly script
+        local FlyScript = [[
+            local Players = game:GetService("Players")
+            local UserInputService = game:GetService("UserInputService")
+            local RunService = game:GetService("RunService")
+            
+            local player = Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local humanoid = character:WaitForChild("Humanoid")
+            
+            local flySpeed = 50
+            local flying = false
+            local flyVelocity = Vector3.new(0, 0, 0)
+            
+            UserInputService.InputBegan:Connect(function(input, gameProcessed)
+                if gameProcessed then return end
+                
+                if input.KeyCode == Enum.KeyCode.F then
+                    flying = not flying
+                    humanoid.PlatformStand = flying
+                end
+            end)
+            
+            RunService.Heartbeat:Connect(function()
+                if flying then
+                    local moveDirection = Vector3.new(0, 0, 0)
+                    
+                    if UserInputService:IsKeyDown(Enum.KeyCode.W) then
+                        moveDirection = moveDirection + Vector3.new(0, 0, -1)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.S) then
+                        moveDirection = moveDirection + Vector3.new(0, 0, 1)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.A) then
+                        moveDirection = moveDirection + Vector3.new(-1, 0, 0)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.D) then
+                        moveDirection = moveDirection + Vector3.new(1, 0, 0)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.Space) then
+                        moveDirection = moveDirection + Vector3.new(0, 1, 0)
+                    end
+                    if UserInputService:IsKeyDown(Enum.KeyCode.LeftControl) then
+                        moveDirection = moveDirection + Vector3.new(0, -1, 0)
+                    end
+                    
+                    if moveDirection.Magnitude > 0 then
+                        moveDirection = moveDirection.Unit * flySpeed
+                    end
+                    
+                    flyVelocity = moveDirection
+                    character.PrimaryPart.Velocity = flyVelocity
+                else
+                    character.PrimaryPart.Velocity = Vector3.new(0, 0, 0)
+                end
+            end)
+        ]]
+        
+        loadstring(FlyScript)()
+        self:Notify("Fly: ON (Press F to toggle)")
+    else
+        self:Notify("Fly: OFF")
+    end
+end
+
+function PlayerUtils:ToggleESP(state)
+    self.ESPEnabled = state
+    
+    if state then
+        -- Simple ESP
         for _, target in pairs(Players:GetPlayers()) do
             if target ~= player and target.Character then
                 local head = target.Character:FindFirstChild("Head")
                 if head then
                     local billboard = Instance.new("BillboardGui")
-                    billboard.Size = UDim2.new(0, 80, 0, 30)
+                    billboard.Size = UDim2.new(0, 100, 0, 40)
                     billboard.StudsOffset = Vector3.new(0, 3, 0)
                     billboard.AlwaysOnTop = true
                     billboard.Adornee = head
@@ -725,9 +550,11 @@ function Utility:ToggleESP(state)
                     local label = Instance.new("TextLabel")
                     label.Size = UDim2.new(1, 0, 1, 0)
                     label.Text = target.Name
-                    label.TextColor3 = Color3.new(1, 1, 1)
+                    label.TextColor3 = Color3.new(1, 0, 0)
                     label.TextStrokeTransparency = 0
                     label.BackgroundTransparency = 1
+                    label.TextSize = 14
+                    label.Font = Enum.Font.GothamBold
                     label.Parent = billboard
                     
                     billboard.Parent = head
@@ -736,6 +563,7 @@ function Utility:ToggleESP(state)
         end
         self:Notify("ESP: ON")
     else
+        -- Remove ESP
         for _, target in pairs(Players:GetPlayers()) do
             if target.Character then
                 local head = target.Character:FindFirstChild("Head")
@@ -749,25 +577,31 @@ function Utility:ToggleESP(state)
     end
 end
 
-function Utility:ToggleFly(state)
-    if state then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
-        self:Notify("Fly: ON")
-    else
-        self:Notify("Fly: OFF")
-    end
-end
+-- =============================================
+-- 📍 TELEPORT SYSTEM
+-- =============================================
+local Teleport = {}
 
-function Utility:Notify(msg)
+function Teleport:Notify(msg)
     game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "⚡ Utility",
+        Title = "📍 Teleport",
         Text = msg,
         Duration = 3
     })
 end
 
+function Teleport:ToPosition(position)
+    local character = player.Character
+    if character and character.PrimaryPart then
+        character:SetPrimaryPartCFrame(CFrame.new(position))
+        self:Notify("Teleported!")
+    else
+        self:Notify("Character not found!")
+    end
+end
+
 -- =============================================
--- 🎨 UI COMPONENT CREATION
+-- 🎨 UI COMPONENTS
 -- =============================================
 local UIComponents = {}
 
@@ -946,7 +780,6 @@ end
 local contentPages = {}
 local currentPage = "Main"
 
--- Fungsi untuk membuat halaman
 local function createPage(pageName)
     local scrollFrame = Instance.new("ScrollingFrame", content)
     scrollFrame.Size = UDim2.new(1, -16, 1, -48)
@@ -970,7 +803,7 @@ mainPage.Visible = true
 
 -- Stats Card
 local statsCard = Instance.new("Frame", mainPage)
-statsCard.Size = UDim2.new(1, 0, 0, 120) -- Diperbesar untuk radar info
+statsCard.Size = UDim2.new(1, 0, 0, 100)
 statsCard.Position = UDim2.new(0, 0, 0, 0)
 statsCard.BackgroundColor3 = Color3.fromRGB(24, 24, 26)
 statsCard.BorderSizePixel = 0
@@ -981,7 +814,7 @@ statsCorner.CornerRadius = UDim.new(0, 6)
 local statsTitle = Instance.new("TextLabel", statsCard)
 statsTitle.Size = UDim2.new(1, -12, 0, 24)
 statsTitle.Position = UDim2.new(0, 6, 0, 6)
-statsTitle.Text = "📊 Fishing Stats & Radar"
+statsTitle.Text = "📊 Fishing Stats"
 statsTitle.TextColor3 = Color3.new(1, 1, 1)
 statsTitle.Font = Enum.Font.GothamBold
 statsTitle.TextSize = 13
@@ -994,37 +827,39 @@ local yOffset = 35
 local statData = {
     {"🎣 Fish:", "0"},
     {"⚖️ Weight:", "0kg"},
-    {"💰 Coins:", "1000"},
-    {"📡 Spots:", "0"},
-    {"⭐ Level:", "1"},
-    {"🎯 Best Spot:", "None"}
+    {"💰 Coins:", "1000"}
 }
 
 for i, data in ipairs(statData) do
     local label = Instance.new("TextLabel", statsCard)
-    label.Size = UDim2.new(0.5, -10, 0, 18)
-    label.Position = UDim2.new((i-1)%2*0.5 + 0.02, 8, 0, yOffset + math.floor((i-1)/2)*20)
+    label.Size = UDim2.new(0.5, -10, 0, 20)
+    label.Position = UDim2.new((i-1)%2*0.5 + 0.02, 8, 0, yOffset + math.floor((i-1)/2)*22)
     label.Text = data[1] .. " " .. data[2]
     label.TextColor3 = Color3.fromRGB(200, 200, 200)
     label.Font = Enum.Font.Gotham
-    label.TextSize = 10
+    label.TextSize = 11
     label.BackgroundTransparency = 1
     label.TextXAlignment = Enum.TextXAlignment.Left
     statLabels[data[1]] = label
 end
 
 -- Quick Actions
-local yPos = 130
+local yPos = 110
 UIComponents:CreateSection(mainPage, "⚡ Quick Actions", yPos)
 yPos = yPos + 30
 
 -- Quick action buttons
 local quickActions = {
-    {"🤖 Start Auto", function() AutoFishing:Toggle(true) end},
-    {"📡 Radar ON", function() FishingRadar:Toggle(true) end},
-    {"🎣 Equip Rod", function() AutoFishing:Notify("Equipping best rod...") end},
-    {"💰 Auto Sell", function() AutoFishing.AutoSell = not AutoFishing.AutoSell 
-        AutoFishing:Notify("Auto Sell: " .. (AutoFishing.AutoSell and "ON" or "OFF")) end}
+    {"🎣 Auto Fishing", function() 
+        if not Fishing.AutoFish then
+            Fishing:StartAutoFishing()
+        else
+            Fishing:Notify("Already fishing!")
+        end
+    end},
+    {"❌ Stop Fishing", function() Fishing:StopAutoFishing() end},
+    {"🎣 Manual Cast", function() Fishing:ManualCast() end},
+    {"🚀 Toggle Fly", function() PlayerUtils:ToggleFly(not PlayerUtils.FlyEnabled) end}
 }
 
 for i, action in ipairs(quickActions) do
@@ -1053,48 +888,7 @@ for i, action in ipairs(quickActions) do
     btn.MouseButton1Click:Connect(action[2])
 end
 
-mainPage.CanvasSize = UDim2.new(0, 0, 0, yPos + 100)
-
--- =============================================
--- 🤖 AUTO FISH PAGE
--- =============================================
-local autoPage = createPage("Auto Fish")
-local yPosAuto = 0
-
-UIComponents:CreateSection(autoPage, "🤖 Auto Fishing System", yPosAuto)
-yPosAuto = yPosAuto + 30
-
-_, yPosAuto = UIComponents:CreateToggle(autoPage, "Enable Auto Fishing", false, function(state)
-    AutoFishing:Toggle(state)
-end, yPosAuto)
-
-_, yPosAuto = UIComponents:CreateToggle(autoPage, "Instant Fishing", false, function(state)
-    AutoFishing.InstantFish = state
-    AutoFishing:Notify("Instant Fishing: " .. (state and "ON" or "OFF"))
-end, yPosAuto)
-
-_, yPosAuto = UIComponents:CreateToggle(autoPage, "Auto Sell Fish", false, function(state)
-    AutoFishing.AutoSell = state
-    AutoFishing:Notify("Auto Sell: " .. (state and "ON" or "OFF"))
-end, yPosAuto)
-
-_, yPosAuto = UIComponents:CreateToggle(autoPage, "Use Radar Guide", true, function(state)
-    AutoFishing.UseRadar = state
-    AutoFishing:Notify("Use Radar: " .. (state and "ON" or "OFF"))
-end, yPosAuto)
-
-_, yPosAuto = UIComponents:CreateSlider(autoPage, "Catch Speed", 1, 5, 1, "x", function(value)
-    AutoFishing:SetCatchSpeed(value)
-end, yPosAuto)
-
-UIComponents:CreateButton(autoPage, "🎣 Start Fishing Session", function()
-    if not AutoFishing.Enabled then
-        AutoFishing:Toggle(true)
-    end
-    AutoFishing:Notify("Starting fishing session...")
-end, yPosAuto)
-
-autoPage.CanvasSize = UDim2.new(0, 0, 0, yPosAuto + 80)
+mainPage.CanvasSize = UDim2.new(0, 0, 0, yPos + 80)
 
 -- =============================================
 -- 🎣 FISHING PAGE
@@ -1102,75 +896,40 @@ autoPage.CanvasSize = UDim2.new(0, 0, 0, yPosAuto + 80)
 local fishingPage = createPage("Fishing")
 local yPosFish = 0
 
-UIComponents:CreateSection(fishingPage, "🎣 Fishing Settings", yPosFish)
+UIComponents:CreateSection(fishingPage, "🎣 Fishing System", yPosFish)
 yPosFish = yPosFish + 30
 
-_, yPosFish = UIComponents:CreateToggle(fishingPage, "No Animation", false, function(state)
-    AutoFishing:Notify("No Animation: " .. (state and "ON" or "OFF"))
-end, yPosFish)
-
-_, yPosFish = UIComponents:CreateToggle(fishingPage, "Auto Bait", false, function(state)
-    AutoFishing:Notify("Auto Bait: " .. (state and "ON" or "OFF"))
-end, yPosFish)
-
-_, yPosFish = UIComponents:CreateSlider(fishingPage, "Max Wait Time", 5, 30, 15, "s", function(value)
-    AutoFishing:Notify("Max Wait: " .. value .. "s")
-end, yPosFish)
-
-UIComponents:CreateButton(fishingPage, "🔧 Advanced Settings", function()
-    AutoFishing:Notify("Advanced Fishing Settings")
-end, yPosFish)
-
-fishingPage.CanvasSize = UDim2.new(0, 0, 0, yPosFish + 100)
-
--- =============================================
--- 📡 RADAR PAGE (BARU)
--- =============================================
-local radarPage = createPage("Radar")
-local yPosRadar = 0
-
-UIComponents:CreateSection(radarPage, "📡 Fishing Radar System", yPosRadar)
-yPosRadar = yPosRadar + 30
-
-_, yPosRadar = UIComponents:CreateToggle(radarPage, "Enable Fishing Radar", false, function(state)
-    FishingRadar:Toggle(state)
-end, yPosRadar)
-
-_, yPosRadar = UIComponents:CreateSlider(radarPage, "Scan Radius", 50, 500, 200, " studs", function(value)
-    FishingRadar.ScanRadius = value
-    FishingRadar:Notify("Scan Radius: " .. value .. " studs")
-end, yPosRadar)
-
-_, yPosRadar = UIComponents:CreateToggle(radarPage, "Show Markers", true, function(state)
-    FishingRadar:Notify("Markers: " .. (state and "ON" or "OFF"))
-end, yPosRadar)
-
-_, yPosRadar = UIComponents:CreateToggle(radarPage, "Highlight Best", true, function(state)
-    FishingRadar:Notify("Highlight Best: " .. (state and "ON" or "OFF"))
-end, yPosRadar)
-
-UIComponents:CreateButton(radarPage, "🎯 Scan Now", function()
-    if FishingRadar.Active then
-        FishingRadar:ScanForSpots()
-        FishingRadar:Notify("Manual scan complete!")
+_, yPosFish = UIComponents:CreateToggle(fishingPage, "Auto Fishing", false, function(state)
+    if state then
+        Fishing:StartAutoFishing()
     else
-        FishingRadar:Notify("Activate radar first!")
+        Fishing:StopAutoFishing()
     end
-end, yPosRadar)
+end, yPosFish)
 
-UIComponents:CreateButton(radarPage, "📍 Go to Best Spot", function()
-    if FishingRadar.BestSpot then
-        local character = player.Character
-        if character and character.PrimaryPart then
-            character:SetPrimaryPartCFrame(CFrame.new(FishingRadar.BestSpot.Position + Vector3.new(0, 5, 0)))
-            AutoFishing:Notify("Teleported to best fishing spot!")
-        end
-    else
-        FishingRadar:Notify("No spot found!")
-    end
-end, yPosRadar)
+_, yPosFish = UIComponents:CreateToggle(fishingPage, "Instant Fishing", false, function(state)
+    Fishing.InstantFish = state
+    Fishing:Notify("Instant Fishing: " .. (state and "ON" or "OFF"))
+end, yPosFish)
 
-radarPage.CanvasSize = UDim2.new(0, 0, 0, yPosRadar + 120)
+UIComponents:CreateButton(fishingPage, "🎣 Manual Cast", function()
+    Fishing:ManualCast()
+end, yPosFish)
+
+UIComponents:CreateButton(fishingPage, "🔄 Check Modules", function()
+    Fishing:GetModules()
+    Fishing:Notify("Checking fishing modules...")
+end, yPosFish + 40)
+
+UIComponents:CreateButton(fishingPage, "💰 Sell All Fish", function()
+    local profit = Fishing.Stats.TotalFish * 50
+    Fishing.Stats.Coins = Fishing.Stats.Coins + profit
+    Fishing.Stats.TotalFish = 0
+    Fishing.Stats.TotalWeight = 0
+    Fishing:Notify("Sold all fish for " .. profit .. " coins!")
+end, yPosFish + 80)
+
+fishingPage.CanvasSize = UDim2.new(0, 0, 0, yPosFish + 140)
 
 -- =============================================
 -- 📍 TELEPORT PAGE
@@ -1181,49 +940,12 @@ local yPosTele = 0
 UIComponents:CreateSection(teleportPage, "📍 Teleport Locations", yPosTele)
 yPosTele = yPosTele + 30
 
--- Teleport dropdown
-local teleFrame = Instance.new("Frame", teleportPage)
-teleFrame.Size = UDim2.new(1, -16, 0, 30)
-teleFrame.Position = UDim2.new(0, 8, 0, yPosTele)
-teleFrame.BackgroundTransparency = 1
-
-local teleLabel = Instance.new("TextLabel", teleFrame)
-teleLabel.Size = UDim2.new(0.4, 0, 1, 0)
-teleLabel.Text = "Location:"
-teleLabel.TextColor3 = Color3.new(1, 1, 1)
-teleLabel.Font = Enum.Font.Gotham
-teleLabel.TextSize = 12
-teleLabel.BackgroundTransparency = 1
-teleLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local teleDropdown = Instance.new("TextButton", teleFrame)
-teleDropdown.Size = UDim2.new(0.6, -8, 1, 0)
-teleDropdown.Position = UDim2.new(0.4, 0, 0, 0)
-teleDropdown.Text = "Select"
-teleDropdown.TextColor3 = Color3.new(1, 1, 1)
-teleDropdown.Font = Enum.Font.Gotham
-teleDropdown.TextSize = 12
-teleDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-teleDropdown.BorderSizePixel = 0
-teleDropdown.AutoButtonColor = false
-
-local dropCorner = Instance.new("UICorner", teleDropdown)
-dropCorner.CornerRadius = UDim.new(0, 4)
-
-yPosTele = yPosTele + 40
-
-UIComponents:CreateButton(teleportPage, "📍 Teleport to Selected", function()
-    AutoFishing:Notify("Teleporting to: " .. teleDropdown.Text)
-end, yPosTele)
-
-yPosTele = yPosTele + 45
-
--- Quick teleport buttons
+-- Teleport buttons
 local teleButtons = {
-    {"Main Island", "🏝️"},
-    {"Fishing Spot", "🎣"},
-    {"Shop", "🛒"},
-    {"Boat Dock", "⛵"}
+    {"Main Island", "🏝️", Vector3.new(0, 10, 0)},
+    {"Fishing Spot", "🎣", Vector3.new(100, 10, 0)},
+    {"Shop", "🛒", Vector3.new(50, 10, 50)},
+    {"Boat Dock", "⛵", Vector3.new(-50, 10, 100)}
 }
 
 for i, btnData in ipairs(teleButtons) do
@@ -1250,11 +972,79 @@ for i, btnData in ipairs(teleButtons) do
     end)
     
     btn.MouseButton1Click:Connect(function()
-        AutoFishing:Notify("Teleporting to " .. btnData[1])
+        Teleport:ToPosition(btnData[3])
+        Teleport:Notify("Teleported to " .. btnData[1])
     end)
 end
 
-teleportPage.CanvasSize = UDim2.new(0, 0, 0, yPosTele + 80)
+yPosTele = yPosTele + 70
+
+-- Custom teleport
+local customFrame = Instance.new("Frame", teleportPage)
+customFrame.Size = UDim2.new(1, -16, 0, 80)
+customFrame.Position = UDim2.new(0, 8, 0, yPosTele)
+customFrame.BackgroundTransparency = 1
+
+local xLabel = Instance.new("TextLabel", customFrame)
+xLabel.Size = UDim2.new(0.3, -4, 0, 20)
+xLabel.Position = UDim2.new(0, 0, 0, 0)
+xLabel.Text = "X:"
+xLabel.TextColor3 = Color3.new(1, 1, 1)
+xLabel.Font = Enum.Font.Gotham
+xLabel.TextSize = 12
+xLabel.BackgroundTransparency = 1
+
+local xBox = Instance.new("TextBox", customFrame)
+xBox.Size = UDim2.new(0.7, 0, 0, 20)
+xBox.Position = UDim2.new(0.3, 4, 0, 0)
+xBox.Text = "0"
+xBox.PlaceholderText = "X coordinate"
+xBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+xBox.TextColor3 = Color3.new(1, 1, 1)
+
+local yLabel = Instance.new("TextLabel", customFrame)
+yLabel.Size = UDim2.new(0.3, -4, 0, 20)
+yLabel.Position = UDim2.new(0, 0, 0, 25)
+yLabel.Text = "Y:"
+yLabel.TextColor3 = Color3.new(1, 1, 1)
+yLabel.Font = Enum.Font.Gotham
+yLabel.TextSize = 12
+yLabel.BackgroundTransparency = 1
+
+local yBox = Instance.new("TextBox", customFrame)
+yBox.Size = UDim2.new(0.7, 0, 0, 20)
+yBox.Position = UDim2.new(0.3, 4, 0, 25)
+yBox.Text = "10"
+yBox.PlaceholderText = "Y coordinate"
+yBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+yBox.TextColor3 = Color3.new(1, 1, 1)
+
+local zLabel = Instance.new("TextLabel", customFrame)
+zLabel.Size = UDim2.new(0.3, -4, 0, 20)
+zLabel.Position = UDim2.new(0, 0, 0, 50)
+zLabel.Text = "Z:"
+zLabel.TextColor3 = Color3.new(1, 1, 1)
+zLabel.Font = Enum.Font.Gotham
+zLabel.TextSize = 12
+zLabel.BackgroundTransparency = 1
+
+local zBox = Instance.new("TextBox", customFrame)
+zBox.Size = UDim2.new(0.7, 0, 0, 20)
+zBox.Position = UDim2.new(0.3, 4, 0, 50)
+zBox.Text = "0"
+zBox.PlaceholderText = "Z coordinate"
+zBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+zBox.TextColor3 = Color3.new(1, 1, 1)
+
+UIComponents:CreateButton(teleportPage, "📍 Teleport to Coordinates", function()
+    local x = tonumber(xBox.Text) or 0
+    local y = tonumber(yBox.Text) or 10
+    local z = tonumber(zBox.Text) or 0
+    Teleport:ToPosition(Vector3.new(x, y, z))
+    Teleport:Notify("Teleported to (" .. x .. ", " .. y .. ", " .. z .. ")")
+end, yPosTele + 90)
+
+teleportPage.CanvasSize = UDim2.new(0, 0, 0, yPosTele + 160)
 
 -- =============================================
 -- ⚡ PLAYER PAGE
@@ -1266,23 +1056,15 @@ UIComponents:CreateSection(playerPage, "⚡ Player Settings", yPosPlayer)
 yPosPlayer = yPosPlayer + 30
 
 _, yPosPlayer = UIComponents:CreateSlider(playerPage, "Walk Speed", 16, 100, 16, "", function(value)
-    Utility:SetWalkSpeed(value)
-end, yPosPlayer)
-
-_, yPosPlayer = UIComponents:CreateSlider(playerPage, "Jump Power", 50, 150, 50, "", function(value)
-    Utility:SetJumpPower(value)
+    PlayerUtils:SetWalkSpeed(value)
 end, yPosPlayer)
 
 _, yPosPlayer = UIComponents:CreateToggle(playerPage, "Infinite Jump", false, function(state)
-    Utility:ToggleInfiniteJump(state)
+    PlayerUtils:ToggleInfiniteJump(state)
 end, yPosPlayer)
 
 _, yPosPlayer = UIComponents:CreateToggle(playerPage, "Fly", false, function(state)
-    Utility:ToggleFly(state)
-end, yPosPlayer)
-
-_, yPosPlayer = UIComponents:CreateToggle(playerPage, "NoClip", false, function(state)
-    Utility:ToggleNoClip(state)
+    PlayerUtils:ToggleFly(state)
 end, yPosPlayer)
 
 playerPage.CanvasSize = UDim2.new(0, 0, 0, yPosPlayer + 20)
@@ -1296,19 +1078,39 @@ local yPosVisual = 0
 UIComponents:CreateSection(visualPage, "👁️ Visual Features", yPosVisual)
 yPosVisual = yPosVisual + 30
 
-_, yPosVisual = UIComponents:CreateToggle(visualPage, "ESP Name", false, function(state)
-    Utility:ToggleESP(state)
+_, yPosVisual = UIComponents:CreateToggle(visualPage, "ESP (Player Names)", false, function(state)
+    PlayerUtils:ToggleESP(state)
 end, yPosVisual)
 
-_, yPosVisual = UIComponents:CreateToggle(visualPage, "Show FPS", false, function(state)
-    AutoFishing:Notify("FPS Display: " .. (state and "ON" or "OFF"))
+UIComponents:CreateButton(visualPage, "🎨 Change UI Color", function()
+    local colors = {
+        Color3.fromRGB(255, 62, 62), -- red
+        Color3.fromRGB(62, 255, 62), -- green
+        Color3.fromRGB(62, 62, 255), -- blue
+        Color3.fromRGB(255, 255, 62), -- yellow
+        Color3.fromRGB(255, 62, 255)  -- pink
+    }
+    
+    local currentIndex = 1
+    for i, color in ipairs(colors) do
+        if color == ACCENT then
+            currentIndex = i
+            break
+        end
+    end
+    
+    local nextIndex = (currentIndex % #colors) + 1
+    ACCENT = colors[nextIndex]
+    
+    -- Update UI elements
+    sTitle.TextColor3 = ACCENT
+    closeButton.BackgroundColor3 = ACCENT
+    content.ScrollBarImageColor3 = ACCENT
+    
+    Fishing:Notify("UI Color changed!")
 end, yPosVisual)
 
-UIComponents:CreateButton(visualPage, "🎨 UI Theme Settings", function()
-    AutoFishing:Notify("Theme Settings")
-end, yPosVisual)
-
-visualPage.CanvasSize = UDim2.new(0, 0, 0, yPosVisual + 60)
+visualPage.CanvasSize = UDim2.new(0, 0, 0, yPosVisual + 80)
 
 -- =============================================
 -- 🎮 MENU NAVIGATION
@@ -1340,11 +1142,13 @@ menuButtons["Main"].BackgroundColor3 = Color3.fromRGB(32, 8, 8)
 -- 🔧 CLOSE BUTTON FUNCTIONALITY
 -- =============================================
 closeButton.MouseButton1Click:Connect(function()
-    -- Cleanup sebelum close
-    AutoFishing:Stop()
-    FishingRadar:Stop()
+    -- Cleanup before close
+    Fishing:StopAutoFishing()
+    PlayerUtils:ToggleFly(false)
+    PlayerUtils:ToggleESP(false)
+    PlayerUtils:ToggleInfiniteJump(false)
     screen:Destroy()
-    AutoFishing:Notify("UI Closed")
+    Fishing:Notify("UI Closed")
 end)
 
 -- =============================================
@@ -1353,21 +1157,10 @@ end)
 -- Update stats loop
 task.spawn(function()
     while screen.Parent do
-        -- Update auto fishing stats
-        statLabels["🎣 Fish:"].Text = "🎣 Fish: " .. AutoFishing.Stats.TotalFish
-        statLabels["⚖️ Weight:"].Text = "⚖️ Weight: " .. string.format("%.1fkg", AutoFishing.Stats.TotalWeight)
-        statLabels["💰 Coins:"].Text = "💰 Coins: " .. AutoFishing.Stats.Coins
-        statLabels["⭐ Level:"].Text = "⭐ Level: " .. AutoFishing.Stats.Level
-        
-        -- Update radar stats
-        if FishingRadar.Active then
-            statLabels["📡 Spots:"].Text = "📡 Spots: " .. #FishingRadar.Spots
-            statLabels["🎯 Best Spot:"].Text = "🎯 Best Spot: " .. 
-                (FishingRadar.BestSpot and math.floor(FishingRadar.BestSpot.Distance) .. " studs" or "None")
-        else
-            statLabels["📡 Spots:"].Text = "📡 Spots: Radar OFF"
-            statLabels["🎯 Best Spot:"].Text = "🎯 Best Spot: Radar OFF"
-        end
+        -- Update fishing stats
+        statLabels["🎣 Fish:"].Text = "🎣 Fish: " .. Fishing.Stats.TotalFish
+        statLabels["⚖️ Weight:"].Text = "⚖️ Weight: " .. string.format("%.1fkg", Fishing.Stats.TotalWeight)
+        statLabels["💰 Coins:"].Text = "💰 Coins: " .. Fishing.Stats.Coins
         
         task.wait(1)
     end
@@ -1377,18 +1170,24 @@ end)
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
     
-    -- F6 untuk toggle auto fishing
-    if input.KeyCode == Enum.KeyCode.F6 then
-        AutoFishing:Toggle(not AutoFishing.Enabled)
-    
-    -- F7 untuk toggle radar
-    elseif input.KeyCode == Enum.KeyCode.F7 then
-        FishingRadar:Toggle(not FishingRadar.Enabled)
+    -- F untuk toggle fly
+    if input.KeyCode == Enum.KeyCode.F then
+        PlayerUtils:ToggleFly(not PlayerUtils.FlyEnabled)
     
     -- E untuk manual fishing
     elseif input.KeyCode == Enum.KeyCode.E then
-        if not AutoFishing.Active then
-            AutoFishing:PerformFishingCycle()
+        Fishing:ManualCast()
+    
+    -- J untuk infinite jump
+    elseif input.KeyCode == Enum.KeyCode.J then
+        PlayerUtils:ToggleInfiniteJump(not PlayerUtils.InfiniteJumpEnabled)
+    
+    -- T untuk toggle auto fishing
+    elseif input.KeyCode == Enum.KeyCode.T then
+        if not Fishing.AutoFish then
+            Fishing:StartAutoFishing()
+        else
+            Fishing:StopAutoFishing()
         end
     end
 end)
@@ -1403,17 +1202,20 @@ end)
 -- =============================================
 -- 🚀 INITIALIZATION
 -- =============================================
--- Initialize systems
-task.wait(1)
-FishingRadar:Initialize()
-AutoFishing:Initialize()
+-- Inisialisasi modul fishing
+task.wait(2)
+Fishing:GetModules()
 
 -- Welcome message
 task.delay(1, function()
     local msg = "🎣 KAITUN FISHING UI LOADED!"
-    msg = msg .. "\n📡 Radar: F7"
-    msg = msg .. "\n🤖 Auto Fish: F6"
-    msg = msg .. "\n🎣 Manual: E"
+    msg = msg .. "\n🎣 Fishing Modules: " .. 
+        (Fishing.Modules.FishingController and "✅" or "❌")
+    msg = msg .. "\n🎣 Manual Fishing: E key"
+    msg = msg .. "\n🤖 Auto Fishing: T key"
+    msg = msg .. "\n🚀 Fly: F key"
+    msg = msg .. "\n👁️ ESP: Visual Page"
+    msg = msg .. "\n⚡ Infinite Jump: J key"
     
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "Kaitun Fishing",
@@ -1424,6 +1226,8 @@ end)
 
 -- Cleanup on player leave
 player.CharacterRemoving:Connect(function()
-    AutoFishing:Stop()
-    FishingRadar:Stop()
+    Fishing:StopAutoFishing()
+    PlayerUtils:ToggleFly(false)
+    PlayerUtils:ToggleESP(false)
+    PlayerUtils:ToggleInfiniteJump(false)
 end)
