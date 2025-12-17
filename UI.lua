@@ -1,7 +1,8 @@
 --====================================================
 -- FISHING HUB - CLIENT ONLY
--- Feature: Skip Minigame / Perfect Catch
--- UI: Premium Black + Red
+-- Features:
+-- 1. Skip Minigame (Perfect Catch)
+-- 2. Instant Fishing
 --====================================================
 
 -- Services
@@ -12,6 +13,7 @@ local player = Players.LocalPlayer
 -- Controllers
 local Controllers = game.ReplicatedStorage:WaitForChild("Controllers")
 local FishingController = require(Controllers:WaitForChild("FishingController"))
+
 local AutoFishingController = Controllers:FindFirstChild("AutoFishingController")
 AutoFishingController = AutoFishingController and require(AutoFishingController)
 
@@ -19,7 +21,8 @@ AutoFishingController = AutoFishingController and require(AutoFishingController)
 -- STATE
 --====================================================
 local State = {
-    SkipMinigame = false
+    SkipMinigame = false,
+    InstantFishing = false
 }
 
 --====================================================
@@ -32,8 +35,8 @@ gui.Parent = player:WaitForChild("PlayerGui")
 
 local main = Instance.new("Frame")
 main.Parent = gui
-main.Size = UDim2.fromScale(0.45, 0.45)
-main.Position = UDim2.fromScale(0.275, 0.28)
+main.Size = UDim2.fromScale(0.45, 0.48)
+main.Position = UDim2.fromScale(0.275, 0.26)
 main.BackgroundColor3 = Color3.fromRGB(15,15,15)
 main.BorderSizePixel = 0
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,18)
@@ -52,7 +55,6 @@ title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 title.TextColor3 = Color3.fromRGB(255,60,60)
 
--- Close
 local close = Instance.new("TextButton", header)
 close.Size = UDim2.new(0,45,1,0)
 close.Position = UDim2.new(1,-45,0,0)
@@ -71,7 +73,7 @@ content.Size = UDim2.new(1,-30,1,-65)
 content.Position = UDim2.new(0,15,0,55)
 content.BackgroundTransparency = 1
 
--- Toggle Button Creator
+-- Toggle creator
 local function makeToggle(text, y, callback)
     local btn = Instance.new("TextButton", content)
     btn.Size = UDim2.new(1,0,0,42)
@@ -93,36 +95,37 @@ local function makeToggle(text, y, callback)
     end)
 end
 
--- Toggle: Skip Minigame
+-- Toggles
 makeToggle("Skip Minigame (Perfect Catch)", 0, function(v)
     State.SkipMinigame = v
 end)
 
---====================================================
--- CORE FEATURE: SKIP MINIGAME
---====================================================
+makeToggle("Instant Fishing", 52, function(v)
+    State.InstantFishing = v
+end)
 
--- Loop-based fallback (safe)
+--====================================================
+-- CORE FEATURE 1: SKIP MINIGAME
+--====================================================
 task.spawn(function()
     while task.wait() do
         if State.SkipMinigame then
             pcall(function()
-                if FishingController.CompleteFishing then
-                    FishingController.CompleteFishing()
-                end
                 if FishingController.SetMinigameResult then
                     FishingController.SetMinigameResult(true)
+                end
+                if FishingController.CompleteFishing then
+                    FishingController.CompleteFishing()
                 end
             end)
         end
     end
 end)
 
--- Event-based (if available)
 if FishingController.FishingMinigameChanged then
     FishingController.FishingMinigameChanged:Connect(function(state)
         if State.SkipMinigame and (state == "Started" or state == true) then
-            task.wait(0.1)
+            task.wait(0.05)
             pcall(function()
                 FishingController.CompleteFishing()
             end)
@@ -131,8 +134,34 @@ if FishingController.FishingMinigameChanged then
 end
 
 --====================================================
--- INFO LOG
+-- CORE FEATURE 2: INSTANT FISHING
+--====================================================
+task.spawn(function()
+    while task.wait(0.2) do
+        if State.InstantFishing then
+            pcall(function()
+                -- Start fishing
+                if FishingController.StartFishing then
+                    FishingController.StartFishing()
+                elseif AutoFishingController and AutoFishingController.Start then
+                    AutoFishingController.Start()
+                end
+
+                -- Instantly complete
+                if FishingController.SetMinigameResult then
+                    FishingController.SetMinigameResult(true)
+                end
+                if FishingController.CompleteFishing then
+                    FishingController.CompleteFishing()
+                end
+            end)
+        end
+    end
+end)
+
+--====================================================
+-- LOG
 --====================================================
 print("[FishingHub] Loaded")
-print("[FishingHub] Skip Minigame ready")
+print("[FishingHub] Skip Minigame + Instant Fishing ready")
 
