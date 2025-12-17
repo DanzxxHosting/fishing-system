@@ -1,47 +1,41 @@
 --====================================================
--- FISHING HUB - CLIENT ONLY
+-- FISHING HUB - CLIENT ONLY (FIXED)
 -- Features:
--- 1. Skip Minigame (Perfect Catch)
--- 2. Instant Fishing
+-- 1. Skip Minigame (WORKING)
+-- 2. Instant Fishing (STATE-BASED)
 --====================================================
 
 -- Services
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
 -- Controllers
 local Controllers = game.ReplicatedStorage:WaitForChild("Controllers")
 local FishingController = require(Controllers:WaitForChild("FishingController"))
 
-local AutoFishingController = Controllers:FindFirstChild("AutoFishingController")
-AutoFishingController = AutoFishingController and require(AutoFishingController)
-
 --====================================================
 -- STATE
 --====================================================
 local State = {
     SkipMinigame = false,
-    InstantFishing = false
+    InstantFishing = false,
+    Busy = false
 }
 
 --====================================================
 -- UI
 --====================================================
-local gui = Instance.new("ScreenGui")
+local gui = Instance.new("ScreenGui", player.PlayerGui)
 gui.Name = "FishingHub"
 gui.ResetOnSpawn = false
-gui.Parent = player:WaitForChild("PlayerGui")
 
-local main = Instance.new("Frame")
-main.Parent = gui
+local main = Instance.new("Frame", gui)
 main.Size = UDim2.fromScale(0.45, 0.48)
 main.Position = UDim2.fromScale(0.275, 0.26)
 main.BackgroundColor3 = Color3.fromRGB(15,15,15)
 main.BorderSizePixel = 0
 Instance.new("UICorner", main).CornerRadius = UDim.new(0,18)
 
--- Header
 local header = Instance.new("Frame", main)
 header.Size = UDim2.new(1,0,0,45)
 header.BackgroundColor3 = Color3.fromRGB(20,20,20)
@@ -67,13 +61,11 @@ close.MouseButton1Click:Connect(function()
     gui:Destroy()
 end)
 
--- Content
 local content = Instance.new("Frame", main)
 content.Size = UDim2.new(1,-30,1,-65)
 content.Position = UDim2.new(0,15,0,55)
 content.BackgroundTransparency = 1
 
--- Toggle creator
 local function makeToggle(text, y, callback)
     local btn = Instance.new("TextButton", content)
     btn.Size = UDim2.new(1,0,0,42)
@@ -95,8 +87,7 @@ local function makeToggle(text, y, callback)
     end)
 end
 
--- Toggles
-makeToggle("Skip Minigame (Perfect Catch)", 0, function(v)
+makeToggle("Skip Minigame", 0, function(v)
     State.SkipMinigame = v
 end)
 
@@ -105,63 +96,48 @@ makeToggle("Instant Fishing", 52, function(v)
 end)
 
 --====================================================
--- CORE FEATURE 1: SKIP MINIGAME
+-- CORE LOGIC
 --====================================================
-task.spawn(function()
-    while task.wait() do
-        if State.SkipMinigame then
-            pcall(function()
-                if FishingController.SetMinigameResult then
-                    FishingController.SetMinigameResult(true)
-                end
-                if FishingController.CompleteFishing then
-                    FishingController.CompleteFishing()
-                end
-            end)
-        end
-    end
-end)
 
+-- EVENT-BASED COMPLETE (AMAN)
 if FishingController.FishingMinigameChanged then
     FishingController.FishingMinigameChanged:Connect(function(state)
-        if State.SkipMinigame and (state == "Started" or state == true) then
+        if (State.SkipMinigame or State.InstantFishing) and state == "Started" then
             task.wait(0.05)
             pcall(function()
                 FishingController.CompleteFishing()
             end)
+            State.Busy = false
         end
     end)
 end
 
---====================================================
--- CORE FEATURE 2: INSTANT FISHING
---====================================================
+-- INSTANT FISHING LOOP (STATE-DRIVEN)
 task.spawn(function()
-    while task.wait(0.2) do
-        if State.InstantFishing then
+    while task.wait(0.3) do
+        if State.InstantFishing and not State.Busy then
+            State.Busy = true
+
             pcall(function()
-                -- Start fishing
+                -- STEP 1: Start fishing
                 if FishingController.StartFishing then
                     FishingController.StartFishing()
-                elseif AutoFishingController and AutoFishingController.Start then
-                    AutoFishingController.Start()
                 end
 
-                -- Instantly complete
-                if FishingController.SetMinigameResult then
-                    FishingController.SetMinigameResult(true)
+                -- STEP 2: FORCE minigame path
+                if FishingController.BeginMinigame then
+                    FishingController.BeginMinigame()
                 end
-                if FishingController.CompleteFishing then
-                    FishingController.CompleteFishing()
-                end
+            end)
+
+            -- FAILSAFE reset
+            task.delay(2, function()
+                State.Busy = false
             end)
         end
     end
 end)
 
---====================================================
--- LOG
---====================================================
-print("[FishingHub] Loaded")
-print("[FishingHub] Skip Minigame + Instant Fishing ready")
+print("[FishingHub] Loaded (FIXED)")
+print("[FishingHub] Instant Fishing uses STATE flow")
 
