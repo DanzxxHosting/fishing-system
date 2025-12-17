@@ -1,9 +1,8 @@
 -- =============================================
--- 🎣 KAITUN FISHING SCRIPT V4.0
+-- 🎣 KAITUN FISHING SCRIPT V4.0 - COMPACT UI
 -- =============================================
--- UI Modern: Hitam Matte + Merah Neon
--- Toggle dengan tombol G
--- Fitur lengkap sesuai permintaan
+-- UI Compact: Hitam Matte + Merah Neon
+-- Toggle dengan tombol UI, tanpa hotkeys
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -13,10 +12,10 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- CONFIG
-local WIDTH = 920
-local HEIGHT = 520
-local SIDEBAR_W = 220
+-- CONFIG - UKURAN LEBIH KECIL
+local WIDTH = 700  -- Diperkecil dari 920
+local HEIGHT = 500 -- Diperkecil dari 520
+local SIDEBAR_W = 180  -- Diperkecil dari 220
 local ACCENT = Color3.fromRGB(255, 62, 62) -- neon merah
 local BG = Color3.fromRGB(12,12,12) -- hitam matte
 local SECOND = Color3.fromRGB(24,24,26)
@@ -31,28 +30,16 @@ local screen = Instance.new("ScreenGui")
 screen.Name = "KaitunFishingUI"
 screen.ResetOnSpawn = false
 screen.Parent = playerGui
-screen.IgnoreGuiInset = true
+screen.IgnoreGuiInset = false
 screen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Main container (centered)
+-- Main container (positioned at top right)
 local container = Instance.new("Frame")
 container.Name = "Container"
 container.Size = UDim2.new(0, WIDTH, 0, HEIGHT)
-container.Position = UDim2.new(0.5, -WIDTH/2, 0.5, -HEIGHT/2)
+container.Position = UDim2.new(1, -WIDTH - 10, 0.5, -HEIGHT/2) -- Posisi kanan atas
 container.BackgroundTransparency = 1
 container.Parent = screen
-
--- Outer glow
-local glow = Instance.new("ImageLabel", screen)
-glow.Name = "Glow"
-glow.AnchorPoint = Vector2.new(0.5,0.5)
-glow.Size = UDim2.new(0, WIDTH+80, 0, HEIGHT+80)
-glow.Position = container.Position
-glow.BackgroundTransparency = 1
-glow.Image = "rbxassetid://5050741616"
-glow.ImageColor3 = ACCENT
-glow.ImageTransparency = 0.92
-glow.ZIndex = 1
 
 -- Card (panel)
 local card = Instance.new("Frame")
@@ -65,89 +52,87 @@ card.Parent = container
 card.ZIndex = 2
 
 local cardCorner = Instance.new("UICorner", card)
-cardCorner.CornerRadius = UDim.new(0, 12)
+cardCorner.CornerRadius = UDim.new(0, 8)
 
 -- inner container
 local inner = Instance.new("Frame", card)
 inner.Name = "Inner"
-inner.Size = UDim2.new(1, -24, 1, -24)
-inner.Position = UDim2.new(0, 12, 0, 12)
+inner.Size = UDim2.new(1, -16, 1, -16)
+inner.Position = UDim2.new(0, 8, 0, 8)
 inner.BackgroundTransparency = 1
 
--- Title bar
+-- Title bar dengan close button
 local titleBar = Instance.new("Frame", inner)
-titleBar.Size = UDim2.new(1,0,0,48)
+titleBar.Size = UDim2.new(1,0,0,40)
 titleBar.Position = UDim2.new(0,0,0,0)
 titleBar.BackgroundTransparency = 1
 
 local title = Instance.new("TextLabel", titleBar)
-title.Size = UDim2.new(0.6,0,1,0)
+title.Size = UDim2.new(0.8,0,1,0)
 title.Position = UDim2.new(0,8,0,0)
 title.BackgroundTransparency = 1
 title.Font = Enum.Font.GothamBold
-title.TextSize = 18
-title.Text = "⚡ KAITUN FISHING SCRIPT V4.0"
+title.TextSize = 16
+title.Text = "🎣 KAITUN FISHING"
 title.TextColor3 = Color3.fromRGB(255, 220, 220)
 title.TextXAlignment = Enum.TextXAlignment.Left
 
-local statusLabel = Instance.new("TextLabel", titleBar)
-statusLabel.Size = UDim2.new(0.4,-16,1,0)
-statusLabel.Position = UDim2.new(0.6,8,0,0)
-statusLabel.BackgroundTransparency = 1
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.TextSize = 13
-statusLabel.Text = "🟢 Ready"
-statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
-statusLabel.TextXAlignment = Enum.TextXAlignment.Right
+-- Close Button
+local closeButton = Instance.new("TextButton", titleBar)
+closeButton.Size = UDim2.new(0, 80, 0, 30)
+closeButton.Position = UDim2.new(1, -88, 0.5, -15)
+closeButton.Text = "❌ Close"
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 12
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+closeButton.BorderSizePixel = 0
+closeButton.ZIndex = 3
+
+local closeCorner = Instance.new("UICorner", closeButton)
+closeCorner.CornerRadius = UDim.new(0, 6)
 
 -- left sidebar
 local sidebar = Instance.new("Frame", inner)
 sidebar.Name = "Sidebar"
-sidebar.Size = UDim2.new(0, SIDEBAR_W, 1, -64)
-sidebar.Position = UDim2.new(0, 0, 0, 56)
+sidebar.Size = UDim2.new(0, SIDEBAR_W, 1, -56)
+sidebar.Position = UDim2.new(0, 0, 0, 48)
 sidebar.BackgroundColor3 = SECOND
 sidebar.BorderSizePixel = 0
 sidebar.ZIndex = 3
 
 local sbCorner = Instance.new("UICorner", sidebar)
-sbCorner.CornerRadius = UDim.new(0, 8)
+sbCorner.CornerRadius = UDim.new(0, 6)
 
 -- sidebar header
 local sbHeader = Instance.new("Frame", sidebar)
-sbHeader.Size = UDim2.new(1,0,0,84)
+sbHeader.Size = UDim2.new(1,0,0,60)
 sbHeader.BackgroundTransparency = 1
 
-local logo = Instance.new("ImageLabel", sbHeader)
-logo.Size = UDim2.new(0,64,0,64)
-logo.Position = UDim2.new(0, 12, 0, 10)
-logo.BackgroundTransparency = 1
-logo.Image = "rbxassetid://6031075938" -- Fishing icon
-logo.ImageColor3 = ACCENT
-
 local sTitle = Instance.new("TextLabel", sbHeader)
-sTitle.Size = UDim2.new(1,-96,0,32)
-sTitle.Position = UDim2.new(0, 88, 0, 12)
+sTitle.Size = UDim2.new(1,-16,1,0)
+sTitle.Position = UDim2.new(0, 8, 0, 0)
 sTitle.BackgroundTransparency = 1
 sTitle.Font = Enum.Font.GothamBold
 sTitle.TextSize = 14
-sTitle.Text = "Kaitun Fishing"
-sTitle.TextColor3 = Color3.fromRGB(240,240,240)
+sTitle.Text = "Navigation"
+sTitle.TextColor3 = ACCENT
 sTitle.TextXAlignment = Enum.TextXAlignment.Left
 
 -- menu list area
 local menuFrame = Instance.new("Frame", sidebar)
-menuFrame.Size = UDim2.new(1,-12,1, -108)
-menuFrame.Position = UDim2.new(0, 6, 0, 92)
+menuFrame.Size = UDim2.new(1,-8,1, -76)
+menuFrame.Position = UDim2.new(0, 4, 0, 68)
 menuFrame.BackgroundTransparency = 1
 
 local menuLayout = Instance.new("UIListLayout", menuFrame)
 menuLayout.SortOrder = Enum.SortOrder.LayoutOrder
-menuLayout.Padding = UDim.new(0,8)
+menuLayout.Padding = UDim.new(0,6)
 
 -- menu helper
 local function makeMenuItem(name, iconText)
     local row = Instance.new("TextButton")
-    row.Size = UDim2.new(1, 0, 0, 44)
+    row.Size = UDim2.new(1, 0, 0, 36)
     row.BackgroundColor3 = Color3.fromRGB(20,20,20)
     row.AutoButtonColor = false
     row.BorderSizePixel = 0
@@ -155,18 +140,18 @@ local function makeMenuItem(name, iconText)
     row.Parent = menuFrame
 
     local corner = Instance.new("UICorner", row)
-    corner.CornerRadius = UDim.new(0,8)
+    corner.CornerRadius = UDim.new(0,6)
 
     local left = Instance.new("Frame", row)
-    left.Size = UDim2.new(0,40,1,0)
-    left.Position = UDim2.new(0,8,0,0)
+    left.Size = UDim2.new(0,32,1,0)
+    left.Position = UDim2.new(0,4,0,0)
     left.BackgroundTransparency = 1
 
     local icon = Instance.new("TextLabel", left)
     icon.Size = UDim2.new(1,0,1,0)
     icon.BackgroundTransparency = 1
     icon.Font = Enum.Font.GothamBold
-    icon.TextSize = 18
+    icon.TextSize = 16
     icon.Text = iconText
     icon.TextColor3 = ACCENT
     icon.TextXAlignment = Enum.TextXAlignment.Center
@@ -174,34 +159,33 @@ local function makeMenuItem(name, iconText)
 
     local label = Instance.new("TextLabel", row)
     label.Size = UDim2.new(0.8,0,1,0)
-    label.Position = UDim2.new(0,56,0,0)
+    label.Position = UDim2.new(0,40,0,0)
     label.BackgroundTransparency = 1
     label.Font = Enum.Font.Gotham
-    label.TextSize = 14
+    label.TextSize = 13
     label.Text = name
     label.TextColor3 = Color3.fromRGB(230,230,230)
     label.TextXAlignment = Enum.TextXAlignment.Left
 
     -- hover effect
     row.MouseEnter:Connect(function()
-        TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(30,10,10)}):Play()
+        TweenService:Create(row, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(30,10,10)}):Play()
     end)
     row.MouseLeave:Connect(function()
-        TweenService:Create(row, TweenInfo.new(0.12), {BackgroundColor3 = Color3.fromRGB(20,20,20)}):Play()
+        TweenService:Create(row, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(20,20,20)}):Play()
     end)
 
     return row, label
 end
 
--- menu items
+-- menu items (hanya yang penting)
 local items = {
-    {"Main Features", "🔧"},
-    {"Auto Fishing", "🤖"},
-    {"Fishing Settings", "🎣"},
-    {"Teleport System", "📍"},
-    {"Player Utility", "⚡"},
-    {"Visual Features", "👁️"},
-    {"Settings", "⚙"},
+    {"Main", "🏠"},
+    {"Auto Fish", "🤖"},
+    {"Fishing", "🎣"},
+    {"Teleport", "📍"},
+    {"Player", "⚡"},
+    {"Visual", "👁️"},
 }
 local menuButtons = {}
 for i, v in ipairs(items) do
@@ -213,141 +197,102 @@ end
 -- content panel (right)
 local content = Instance.new("Frame", inner)
 content.Name = "Content"
-content.Size = UDim2.new(1, -SIDEBAR_W - 36, 1, -64)
-content.Position = UDim2.new(0, SIDEBAR_W + 24, 0, 56)
+content.Size = UDim2.new(1, -SIDEBAR_W - 24, 1, -56)
+content.Position = UDim2.new(0, SIDEBAR_W + 16, 0, 48)
 content.BackgroundColor3 = Color3.fromRGB(18,18,20)
 content.BorderSizePixel = 0
 
 local contentCorner = Instance.new("UICorner", content)
-contentCorner.CornerRadius = UDim.new(0, 8)
+contentCorner.CornerRadius = UDim.new(0, 6)
 
 -- content title area
 local cTitle = Instance.new("TextLabel", content)
-cTitle.Size = UDim2.new(1, -24, 0, 44)
-cTitle.Position = UDim2.new(0,12,0,12)
+cTitle.Size = UDim2.new(1, -16, 0, 32)
+cTitle.Position = UDim2.new(0,8,0,8)
 cTitle.BackgroundTransparency = 1
 cTitle.Font = Enum.Font.GothamBold
-cTitle.TextSize = 16
-cTitle.Text = "Main Features"
+cTitle.TextSize = 15
+cTitle.Text = "Main Dashboard"
 cTitle.TextColor3 = Color3.fromRGB(245,245,245)
 cTitle.TextXAlignment = Enum.TextXAlignment.Left
 
 -- =============================================
--- 🎯 FISHING SYSTEM
+-- 🎯 FISHING SYSTEM (SIMPLIFIED)
 -- =============================================
 local FishingSystem = {
     Config = {
         AutoFishing = false,
         InstantFishing = false,
-        BlatantFishing = false,
         AutoSell = false,
-        AutoBait = false,
         CatchSpeed = 1,
-        RadarEnabled = false,
+        Radar = false,
         NoAnimation = false,
-        AutoQuest = false
     },
     Stats = {
         TotalFish = 0,
         TotalWeight = 0,
-        BiggestFish = "None (0kg)",
+        BiggestFish = "None",
         Coins = 1000,
         Level = 1
     },
-    AutoFishingThread = nil
+    AutoThread = nil
 }
 
-function FishingSystem:ShowNotification(message)
-    local notif = Instance.new("TextLabel", content)
-    notif.Size = UDim2.new(0.8, 0, 0, 36)
-    notif.Position = UDim2.new(0.1, 0, 0.9, 0)
-    notif.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    notif.TextColor3 = Color3.new(1, 1, 1)
-    notif.Font = Enum.Font.Gotham
-    notif.TextSize = 13
-    notif.Text = "📢 " .. message
-    notif.ZIndex = 10
-    
-    local corner = Instance.new("UICorner", notif)
-    corner.CornerRadius = UDim.new(0, 6)
-    
-    TweenService:Create(notif, TweenInfo.new(0.3), {Position = UDim2.new(0.1, 0, 0.85, 0)}):Play()
-    
-    task.delay(3, function()
-        if notif then
-            TweenService:Create(notif, TweenInfo.new(0.3), {Position = UDim2.new(0.1, 0, 0.9, 0)}):Play()
-            task.delay(0.3, function()
-                if notif then notif:Destroy() end
-            end)
-        end
-    end)
+function FishingSystem:Notify(msg)
+    -- Simple notification
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "🎣 Fishing Script",
+        Text = msg,
+        Duration = 3
+    })
 end
 
 function FishingSystem:ToggleAutoFishing(state)
     self.Config.AutoFishing = state
-    self:ShowNotification("🤖 Auto Fishing: " .. (state and "ON" or "OFF"))
+    self:Notify("Auto Fishing: " .. (state and "ON" or "OFF"))
     
     if state then
-        self.AutoFishingThread = task.spawn(function()
+        self.AutoThread = task.spawn(function()
             while self.Config.AutoFishing do
                 self.Stats.TotalFish = self.Stats.TotalFish + 1
-                self.Stats.TotalWeight = self.Stats.TotalWeight + math.random(1, 50) / 10
-                self.Stats.Coins = self.Stats.Coins + math.random(10, 100)
+                self.Stats.TotalWeight = self.Stats.TotalWeight + math.random(1, 30) / 10
+                self.Stats.Coins = self.Stats.Coins + math.random(5, 50)
                 task.wait(1 / self.Config.CatchSpeed)
             end
         end)
-    elseif self.AutoFishingThread then
-        task.cancel(self.AutoFishingThread)
-        self.AutoFishingThread = nil
+    elseif self.AutoThread then
+        task.cancel(self.AutoThread)
+        self.AutoThread = nil
     end
 end
 
 function FishingSystem:SetInstantFishing(state)
     self.Config.InstantFishing = state
-    self:ShowNotification("⚡ Instant Fishing: " .. (state and "ON" or "OFF"))
-end
-
-function FishingSystem:SetBlatantFishing(state)
-    self.Config.BlatantFishing = state
-    self:ShowNotification("🚀 Blatant Fishing: " .. (state and "ON" or "OFF"))
+    self:Notify("Instant Fishing: " .. (state and "ON" or "OFF"))
 end
 
 function FishingSystem:ToggleAutoSell(state)
     self.Config.AutoSell = state
-    self:ShowNotification("💰 Auto Sell: " .. (state and "ON" or "OFF"))
-end
-
-function FishingSystem:ToggleAutoBait(state)
-    self.Config.AutoBait = state
-    self:ShowNotification("🪱 Auto Bait: " .. (state and "ON" or "OFF"))
+    self:Notify("Auto Sell: " .. (state and "ON" or "OFF"))
 end
 
 function FishingSystem:SetCatchSpeed(speed)
     self.Config.CatchSpeed = speed
-    self:ShowNotification("🎯 Catch Speed: " .. speed .. "x")
+    self:Notify("Catch Speed: " .. speed .. "x")
 end
 
 function FishingSystem:ToggleRadar(state)
-    self.Config.RadarEnabled = state
-    self:ShowNotification("📡 Fishing Radar: " .. (state and "ON" or "OFF"))
+    self.Config.Radar = state
+    self:Notify("Radar: " .. (state and "ON" or "OFF"))
 end
 
 function FishingSystem:ToggleNoAnimation(state)
     self.Config.NoAnimation = state
-    self:ShowNotification("👻 No Animation: " .. (state and "ON" or "OFF"))
-end
-
-function FishingSystem:ToggleAutoQuest(state)
-    self.Config.AutoQuest = state
-    self:ShowNotification("📜 Auto Quest: " .. (state and "ON" or "OFF"))
+    self:Notify("No Animation: " .. (state and "ON" or "OFF"))
 end
 
 function FishingSystem:EquipBestRod()
-    self:ShowNotification("🎣 Equipping Best Rod...")
-end
-
-function FishingSystem:InstantCast()
-    self:ShowNotification("⚡ Instant Cast!")
+    self:Notify("Equipping best rod...")
 end
 
 function FishingSystem:GetStats()
@@ -369,7 +314,7 @@ function Utility:SetWalkSpeed(speed)
     local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
     if humanoid then
         humanoid.WalkSpeed = speed
-        FishingSystem:ShowNotification("🚶 Walk Speed: " .. speed)
+        FishingSystem:Notify("Walk Speed: " .. speed)
     end
 end
 
@@ -377,7 +322,7 @@ function Utility:SetJumpPower(power)
     local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
     if humanoid then
         humanoid.JumpPower = power
-        FishingSystem:ShowNotification("🦘 Jump Power: " .. power)
+        FishingSystem:Notify("Jump Power: " .. power)
     end
 end
 
@@ -391,9 +336,9 @@ function Utility:ToggleInfiniteJump(state)
                 end
             end
         end)
-        FishingSystem:ShowNotification("♾️ Infinite Jump: ON")
+        FishingSystem:Notify("Infinite Jump: ON")
     else
-        FishingSystem:ShowNotification("♾️ Infinite Jump: OFF")
+        FishingSystem:Notify("Infinite Jump: OFF")
     end
 end
 
@@ -404,7 +349,7 @@ function Utility:ToggleESP(state)
                 local head = target.Character:FindFirstChild("Head")
                 if head then
                     local billboard = Instance.new("BillboardGui")
-                    billboard.Size = UDim2.new(0, 100, 0, 40)
+                    billboard.Size = UDim2.new(0, 80, 0, 30)
                     billboard.StudsOffset = Vector3.new(0, 3, 0)
                     billboard.AlwaysOnTop = true
                     billboard.Adornee = head
@@ -422,7 +367,7 @@ function Utility:ToggleESP(state)
                 end
             end
         end
-        FishingSystem:ShowNotification("👁️ ESP: ON")
+        FishingSystem:Notify("ESP: ON")
     else
         for _, target in pairs(Players:GetPlayers()) do
             if target.Character then
@@ -433,22 +378,23 @@ function Utility:ToggleESP(state)
                 end
             end
         end
-        FishingSystem:ShowNotification("👁️ ESP: OFF")
+        FishingSystem:Notify("ESP: OFF")
     end
 end
 
 function Utility:ToggleFly(state)
     if state then
         loadstring(game:HttpGet("https://raw.githubusercontent.com/XNEOFF/FlyGuiV3/main/FlyGuiV3.txt"))()
-        FishingSystem:ShowNotification("✈️ Fly: ON (Press X to fly)")
+        FishingSystem:Notify("Fly: ON")
     else
-        FishingSystem:ShowNotification("✈️ Fly: OFF")
+        FishingSystem:Notify("Fly: OFF")
     end
 end
 
 function Utility:ToggleNoClip(state)
     if state then
-        RunService.Stepped:Connect(function()
+        local conn
+        conn = RunService.Stepped:Connect(function()
             if player.Character then
                 for _, part in pairs(player.Character:GetDescendants()) do
                     if part:IsA("BasePart") then
@@ -457,9 +403,9 @@ function Utility:ToggleNoClip(state)
                 end
             end
         end)
-        FishingSystem:ShowNotification("👻 NoClip: ON")
+        FishingSystem:Notify("NoClip: ON")
     else
-        FishingSystem:ShowNotification("👻 NoClip: OFF")
+        FishingSystem:Notify("NoClip: OFF")
     end
 end
 
@@ -470,49 +416,49 @@ local UIComponents = {}
 
 function UIComponents:CreateSection(parent, title, yPos)
     local section = Instance.new("Frame", parent)
-    section.Size = UDim2.new(1, -24, 0, 30)
-    section.Position = UDim2.new(0, 12, 0, yPos)
+    section.Size = UDim2.new(1, -16, 0, 24)
+    section.Position = UDim2.new(0, 8, 0, yPos)
     section.BackgroundTransparency = 1
     
     local titleLabel = Instance.new("TextLabel", section)
     titleLabel.Size = UDim2.new(1, 0, 1, 0)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 14
+    titleLabel.TextSize = 13
     titleLabel.Text = "  " .. title
     titleLabel.TextColor3 = ACCENT
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    return section, yPos + 40
+    return section, yPos + 30
 end
 
 function UIComponents:CreateToggle(parent, text, defaultValue, callback, yPos)
     local toggleFrame = Instance.new("Frame", parent)
-    toggleFrame.Size = UDim2.new(1, -24, 0, 36)
-    toggleFrame.Position = UDim2.new(0, 12, 0, yPos)
+    toggleFrame.Size = UDim2.new(1, -16, 0, 28)
+    toggleFrame.Position = UDim2.new(0, 8, 0, yPos)
     toggleFrame.BackgroundTransparency = 1
     
     local toggleButton = Instance.new("TextButton", toggleFrame)
-    toggleButton.Size = UDim2.new(0, 32, 0, 32)
+    toggleButton.Size = UDim2.new(0, 24, 0, 24)
     toggleButton.Position = UDim2.new(0, 0, 0, 2)
     toggleButton.Text = defaultValue and "✓" or "☐"
     toggleButton.TextColor3 = Color3.new(1, 1, 1)
     toggleButton.Font = Enum.Font.GothamBold
-    toggleButton.TextSize = 16
+    toggleButton.TextSize = 14
     toggleButton.BackgroundColor3 = defaultValue and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(80, 80, 90)
     toggleButton.BorderSizePixel = 0
     toggleButton.AutoButtonColor = false
     
     local corner = Instance.new("UICorner", toggleButton)
-    corner.CornerRadius = UDim.new(0, 6)
+    corner.CornerRadius = UDim.new(0, 4)
     
     local label = Instance.new("TextLabel", toggleFrame)
-    label.Size = UDim2.new(1, -40, 1, 0)
-    label.Position = UDim2.new(0, 40, 0, 0)
+    label.Size = UDim2.new(1, -30, 1, 0)
+    label.Position = UDim2.new(0, 30, 0, 0)
     label.Text = text
     label.TextColor3 = Color3.new(1, 1, 1)
     label.Font = Enum.Font.Gotham
-    label.TextSize = 13
+    label.TextSize = 12
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.BackgroundTransparency = 1
     
@@ -525,27 +471,27 @@ function UIComponents:CreateToggle(parent, text, defaultValue, callback, yPos)
         callback(state)
     end)
     
-    return toggleFrame, yPos + 45
+    return toggleFrame, yPos + 35
 end
 
 function UIComponents:CreateSlider(parent, text, min, max, defaultValue, suffix, callback, yPos)
     local sliderFrame = Instance.new("Frame", parent)
-    sliderFrame.Size = UDim2.new(1, -24, 0, 60)
-    sliderFrame.Position = UDim2.new(0, 12, 0, yPos)
+    sliderFrame.Size = UDim2.new(1, -16, 0, 50)
+    sliderFrame.Position = UDim2.new(0, 8, 0, yPos)
     sliderFrame.BackgroundTransparency = 1
     
     local label = Instance.new("TextLabel", sliderFrame)
-    label.Size = UDim2.new(1, 0, 0, 20)
+    label.Size = UDim2.new(1, 0, 0, 18)
     label.Text = text .. ": " .. defaultValue .. suffix
     label.TextColor3 = Color3.new(1, 1, 1)
     label.Font = Enum.Font.Gotham
-    label.TextSize = 13
+    label.TextSize = 12
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.BackgroundTransparency = 1
     
     local track = Instance.new("Frame", sliderFrame)
-    track.Size = UDim2.new(1, 0, 0, 6)
-    track.Position = UDim2.new(0, 0, 0, 30)
+    track.Size = UDim2.new(1, 0, 0, 4)
+    track.Position = UDim2.new(0, 0, 0, 25)
     track.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
     track.BorderSizePixel = 0
     
@@ -561,8 +507,8 @@ function UIComponents:CreateSlider(parent, text, min, max, defaultValue, suffix,
     fillCorner.CornerRadius = UDim.new(1, 0)
     
     local button = Instance.new("TextButton", track)
-    button.Size = UDim2.new(0, 20, 0, 20)
-    button.Position = UDim2.new((defaultValue - min) / (max - min), -10, 0.5, -10)
+    button.Size = UDim2.new(0, 16, 0, 16)
+    button.Position = UDim2.new((defaultValue - min) / (max - min), -8, 0.5, -8)
     button.Text = ""
     button.BackgroundColor3 = Color3.new(1, 1, 1)
     button.BorderSizePixel = 0
@@ -578,7 +524,7 @@ function UIComponents:CreateSlider(parent, text, min, max, defaultValue, suffix,
         currentValue = math.clamp(math.floor(value), min, max)
         local percent = (currentValue - min) / (max - min)
         fill.Size = UDim2.new(percent, 0, 1, 0)
-        button.Position = UDim2.new(percent, -10, 0.5, -10)
+        button.Position = UDim2.new(percent, -8, 0.5, -8)
         label.Text = text .. ": " .. currentValue .. suffix
         callback(currentValue)
     end
@@ -605,17 +551,17 @@ function UIComponents:CreateSlider(parent, text, min, max, defaultValue, suffix,
         end
     end)
     
-    return sliderFrame, yPos + 70
+    return sliderFrame, yPos + 60
 end
 
 function UIComponents:CreateButton(parent, text, callback, yPos)
     local button = Instance.new("TextButton", parent)
-    button.Size = UDim2.new(1, -24, 0, 40)
-    button.Position = UDim2.new(0, 12, 0, yPos)
+    button.Size = UDim2.new(1, -16, 0, 32)
+    button.Position = UDim2.new(0, 8, 0, yPos)
     button.Text = text
     button.TextColor3 = Color3.new(1, 1, 1)
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 14
+    button.TextSize = 13
     button.BackgroundColor3 = ACCENT
     button.BorderSizePixel = 0
     button.AutoButtonColor = false
@@ -634,279 +580,316 @@ function UIComponents:CreateButton(parent, text, callback, yPos)
     
     button.MouseButton1Click:Connect(callback)
     
-    return button, yPos + 50
+    return button, yPos + 40
 end
 
 -- =============================================
--- 📱 CONTENT PAGES
+-- 📱 CREATE CONTENT PAGES
 -- =============================================
 local contentPages = {}
-local currentPage = "Main Features"
+local currentPage = "Main"
 
-function CreateContentPage(pageName)
+-- Fungsi untuk membuat halaman
+local function createPage(pageName)
     local scrollFrame = Instance.new("ScrollingFrame", content)
-    scrollFrame.Size = UDim2.new(1, -24, 1, -68)
-    scrollFrame.Position = UDim2.new(0, 12, 0, 56)
+    scrollFrame.Size = UDim2.new(1, -16, 1, -48)
+    scrollFrame.Position = UDim2.new(0, 8, 0, 40)
     scrollFrame.BackgroundTransparency = 1
-    scrollFrame.ScrollBarThickness = 6
+    scrollFrame.ScrollBarThickness = 4
     scrollFrame.ScrollBarImageColor3 = ACCENT
     scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-    scrollFrame.Visible = pageName == "Main Features"
+    scrollFrame.Visible = false
     scrollFrame.Name = pageName .. "Page"
     
     contentPages[pageName] = scrollFrame
-    
     return scrollFrame
 end
 
--- Create all pages
-for _, page in ipairs({"Main Features", "Auto Fishing", "Fishing Settings", "Teleport System", "Player Utility", "Visual Features", "Settings"}) do
-    CreateContentPage(page)
-end
-
 -- =============================================
--- 📋 POPULATE PAGES
+-- 📋 MAIN PAGE
 -- =============================================
+local mainPage = createPage("Main")
+mainPage.Visible = true
 
--- Main Features Page
-local mainPage = contentPages["Main Features"]
-local yPos = 0
+-- Stats Card
+local statsCard = Instance.new("Frame", mainPage)
+statsCard.Size = UDim2.new(1, 0, 0, 100)
+statsCard.Position = UDim2.new(0, 0, 0, 0)
+statsCard.BackgroundColor3 = Color3.fromRGB(24, 24, 26)
+statsCard.BorderSizePixel = 0
 
--- Stats Section
-local statsFrame = Instance.new("Frame", mainPage)
-statsFrame.Size = UDim2.new(1, 0, 0, 140)
-statsFrame.Position = UDim2.new(0, 0, 0, yPos)
-statsFrame.BackgroundColor3 = Color3.fromRGB(24, 24, 26)
-statsFrame.BorderSizePixel = 0
+local statsCorner = Instance.new("UICorner", statsCard)
+statsCorner.CornerRadius = UDim.new(0, 6)
 
-local statsCorner = Instance.new("UICorner", statsFrame)
-statsCorner.CornerRadius = UDim.new(0, 8)
-
-local statsTitle = Instance.new("TextLabel", statsFrame)
-statsTitle.Size = UDim2.new(1, -24, 0, 30)
-statsTitle.Position = UDim2.new(0, 12, 0, 8)
-statsTitle.Text = "📊 Fishing Statistics"
+local statsTitle = Instance.new("TextLabel", statsCard)
+statsTitle.Size = UDim2.new(1, -12, 0, 24)
+statsTitle.Position = UDim2.new(0, 6, 0, 6)
+statsTitle.Text = "📊 Fishing Stats"
 statsTitle.TextColor3 = Color3.new(1, 1, 1)
 statsTitle.Font = Enum.Font.GothamBold
-statsTitle.TextSize = 14
+statsTitle.TextSize = 13
 statsTitle.BackgroundTransparency = 1
 statsTitle.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Stats labels
 local statLabels = {}
-local statNames = {"🎣 Total Fish", "⚖️ Total Weight", "💰 Coins", "⭐ Level"}
-for i, name in ipairs(statNames) do
-    local label = Instance.new("TextLabel", statsFrame)
-    label.Size = UDim2.new(0.5, -12, 0, 24)
-    label.Position = UDim2.new((i-1)%2*0.5 + 0.02, 12, 0, 45 + math.floor((i-1)/2)*28)
-    label.Text = name .. ": 0"
+local yOffset = 35
+local statData = {
+    {"🎣 Fish:", "0"},
+    {"⚖️ Weight:", "0kg"},
+    {"💰 Coins:", "1000"},
+    {"⭐ Level:", "1"}
+}
+
+for i, data in ipairs(statData) do
+    local label = Instance.new("TextLabel", statsCard)
+    label.Size = UDim2.new(0.5, -10, 0, 20)
+    label.Position = UDim2.new((i-1)%2*0.5 + 0.02, 8, 0, yOffset + math.floor((i-1)/2)*22)
+    label.Text = data[1] .. " " .. data[2]
     label.TextColor3 = Color3.fromRGB(200, 200, 200)
     label.Font = Enum.Font.Gotham
-    label.TextSize = 13
+    label.TextSize = 11
     label.BackgroundTransparency = 1
     label.TextXAlignment = Enum.TextXAlignment.Left
-    statLabels[name] = label
+    statLabels[data[1]] = label
 end
-
-yPos = yPos + 150
 
 -- Quick Actions
-_, yPos = UIComponents:CreateSection(mainPage, "⚡ Quick Actions", yPos)
+local yPos = 110
+UIComponents:CreateSection(mainPage, "⚡ Quick Actions", yPos)
+yPos = yPos + 30
 
-UIComponents:CreateButton(mainPage, "🎣 Start Auto Fishing", function()
-    FishingSystem:ToggleAutoFishing(true)
-end, yPos)
+-- Quick action buttons
+local quickActions = {
+    {"🤖 Start Auto Fish", function() FishingSystem:ToggleAutoFishing(true) end},
+    {"🎣 Equip Best Rod", function() FishingSystem:EquipBestRod() end},
+    {"⚡ Instant Cast", function() FishingSystem:Notify("Instant Cast!") end},
+    {"📡 Toggle Radar", function() FishingSystem:ToggleRadar(not FishingSystem.Config.Radar) end}
+}
 
-yPos = yPos + 50
+for i, action in ipairs(quickActions) do
+    local btn = Instance.new("TextButton", mainPage)
+    btn.Size = UDim2.new(0.5, -10, 0, 28)
+    btn.Position = UDim2.new((i-1)%2*0.5 + 0.02, 8, 0, yPos + math.floor((i-1)/2)*32)
+    btn.Text = action[1]
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 11
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    
+    local btnCorner = Instance.new("UICorner", btn)
+    btnCorner.CornerRadius = UDim.new(0, 4)
+    
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(60, 60, 60)}):Play()
+    end)
+    
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+    end)
+    
+    btn.MouseButton1Click:Connect(action[2])
+end
 
-UIComponents:CreateButton(mainPage, "⚡ Instant Cast", function()
-    FishingSystem:InstantCast()
-end, yPos)
+mainPage.CanvasSize = UDim2.new(0, 0, 0, yPos + 80)
 
-yPos = yPos + 50
+-- =============================================
+-- 🤖 AUTO FISH PAGE
+-- =============================================
+local autoPage = createPage("Auto Fish")
+local yPosAuto = 0
 
-UIComponents:CreateButton(mainPage, "🎣 Equip Best Rod", function()
-    FishingSystem:EquipBestRod()
-end, yPos)
+UIComponents:CreateSection(autoPage, "🤖 Auto Fishing", yPosAuto)
+yPosAuto = yPosAuto + 30
 
-yPos = yPos + 60
-
--- Auto Fishing Page
-local autoPage = contentPages["Auto Fishing"]
-yPos = 0
-
-_, yPos = UIComponents:CreateSection(autoPage, "🤖 Auto Fishing Settings", yPos)
-
-_, yPos = UIComponents:CreateToggle(autoPage, "Enable Auto Fishing", false, function(state)
+_, yPosAuto = UIComponents:CreateToggle(autoPage, "Enable Auto Fishing", false, function(state)
     FishingSystem:ToggleAutoFishing(state)
-end, yPos)
+end, yPosAuto)
 
-_, yPos = UIComponents:CreateToggle(autoPage, "Instant Fishing", false, function(state)
+_, yPosAuto = UIComponents:CreateToggle(autoPage, "Instant Fishing", false, function(state)
     FishingSystem:SetInstantFishing(state)
-end, yPos)
+end, yPosAuto)
 
-_, yPos = UIComponents:CreateToggle(autoPage, "Blatant Fishing", false, function(state)
-    FishingSystem:SetBlatantFishing(state)
-end, yPos)
-
-_, yPos = UIComponents:CreateToggle(autoPage, "Auto Sell Fish", false, function(state)
+_, yPosAuto = UIComponents:CreateToggle(autoPage, "Auto Sell Fish", false, function(state)
     FishingSystem:ToggleAutoSell(state)
-end, yPos)
+end, yPosAuto)
 
-_, yPos = UIComponents:CreateToggle(autoPage, "Auto Rebuy Bait", false, function(state)
-    FishingSystem:ToggleAutoBait(state)
-end, yPos)
-
-_, yPos = UIComponents:CreateSlider(autoPage, "Catch Speed", 1, 10, 1, "x", function(value)
+_, yPosAuto = UIComponents:CreateSlider(autoPage, "Catch Speed", 1, 5, 1, "x", function(value)
     FishingSystem:SetCatchSpeed(value)
-end, yPos)
+end, yPosAuto)
 
--- Fishing Settings Page
-local fishPage = contentPages["Fishing Settings"]
-yPos = 0
+autoPage.CanvasSize = UDim2.new(0, 0, 0, yPosAuto + 20)
 
-_, yPos = UIComponents:CreateSection(fishPage, "🎣 Fishing Configuration", yPos)
+-- =============================================
+-- 🎣 FISHING PAGE
+-- =============================================
+local fishingPage = createPage("Fishing")
+local yPosFish = 0
 
-_, yPos = UIComponents:CreateToggle(fishPage, "Fishing Radar", false, function(state)
+UIComponents:CreateSection(fishingPage, "🎣 Fishing Settings", yPosFish)
+yPosFish = yPosFish + 30
+
+_, yPosFish = UIComponents:CreateToggle(fishingPage, "Fishing Radar", false, function(state)
     FishingSystem:ToggleRadar(state)
-end, yPos)
+end, yPosFish)
 
-_, yPos = UIComponents:CreateToggle(fishPage, "No Animation", false, function(state)
+_, yPosFish = UIComponents:CreateToggle(fishingPage, "No Animation", false, function(state)
     FishingSystem:ToggleNoAnimation(state)
-end, yPos)
+end, yPosFish)
 
-_, yPos = UIComponents:CreateToggle(fishPage, "Auto Quest", false, function(state)
-    FishingSystem:ToggleAutoQuest(state)
-end, yPos)
+UIComponents:CreateButton(fishingPage, "🔧 Advanced Settings", function()
+    FishingSystem:Notify("Advanced Settings")
+end, yPosFish)
 
-_, yPos = UIComponents:CreateButton(fishPage, "🔧 Advanced Settings", function()
-    FishingSystem:ShowNotification("Advanced settings opened")
-end, yPos)
+fishingPage.CanvasSize = UDim2.new(0, 0, 0, yPosFish + 60)
 
--- Teleport System Page
-local teleportPage = contentPages["Teleport System"]
-yPos = 0
+-- =============================================
+-- 📍 TELEPORT PAGE
+-- =============================================
+local teleportPage = createPage("Teleport")
+local yPosTele = 0
 
-_, yPos = UIComponents:CreateSection(teleportPage, "📍 Teleport Locations", yPos)
+UIComponents:CreateSection(teleportPage, "📍 Teleport Locations", yPosTele)
+yPosTele = yPosTele + 30
 
 -- Teleport dropdown
-local teleportFrame = Instance.new("Frame", teleportPage)
-teleportFrame.Size = UDim2.new(1, -24, 0, 40)
-teleportFrame.Position = UDim2.new(0, 12, 0, yPos)
-teleportFrame.BackgroundTransparency = 1
+local teleFrame = Instance.new("Frame", teleportPage)
+teleFrame.Size = UDim2.new(1, -16, 0, 30)
+teleFrame.Position = UDim2.new(0, 8, 0, yPosTele)
+teleFrame.BackgroundTransparency = 1
 
-local teleportLabel = Instance.new("TextLabel", teleportFrame)
-teleportLabel.Size = UDim2.new(0.3, 0, 1, 0)
-teleportLabel.Text = "Island:"
-teleportLabel.TextColor3 = Color3.new(1, 1, 1)
-teleportLabel.Font = Enum.Font.Gotham
-teleportLabel.TextSize = 13
-teleportLabel.BackgroundTransparency = 1
-teleportLabel.TextXAlignment = Enum.TextXAlignment.Left
+local teleLabel = Instance.new("TextLabel", teleFrame)
+teleLabel.Size = UDim2.new(0.4, 0, 1, 0)
+teleLabel.Text = "Location:"
+teleLabel.TextColor3 = Color3.new(1, 1, 1)
+teleLabel.Font = Enum.Font.Gotham
+teleLabel.TextSize = 12
+teleLabel.BackgroundTransparency = 1
+teleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-local teleportDropdown = Instance.new("TextButton", teleportFrame)
-teleportDropdown.Size = UDim2.new(0.7, -10, 1, 0)
-teleportDropdown.Position = UDim2.new(0.3, 0, 0, 0)
-teleportDropdown.Text = "Select Island"
-teleportDropdown.TextColor3 = Color3.new(1, 1, 1)
-teleportDropdown.Font = Enum.Font.Gotham
-teleportDropdown.TextSize = 13
-teleportDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-teleportDropdown.BorderSizePixel = 0
-teleportDropdown.AutoButtonColor = false
+local teleDropdown = Instance.new("TextButton", teleFrame)
+teleDropdown.Size = UDim2.new(0.6, -8, 1, 0)
+teleDropdown.Position = UDim2.new(0.4, 0, 0, 0)
+teleDropdown.Text = "Select"
+teleDropdown.TextColor3 = Color3.new(1, 1, 1)
+teleDropdown.Font = Enum.Font.Gotham
+teleDropdown.TextSize = 12
+teleDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+teleDropdown.BorderSizePixel = 0
+teleDropdown.AutoButtonColor = false
 
-local dropdownCorner = Instance.new("UICorner", teleportDropdown)
-dropdownCorner.CornerRadius = UDim.new(0, 6)
+local dropCorner = Instance.new("UICorner", teleDropdown)
+dropCorner.CornerRadius = UDim.new(0, 4)
 
-yPos = yPos + 50
+yPosTele = yPosTele + 40
 
--- Teleport buttons
-UIComponents:CreateButton(teleportPage, "📍 Teleport to Selected Island", function()
-    FishingSystem:ShowNotification("Teleporting to: " .. teleportDropdown.Text)
-end, yPos)
+UIComponents:CreateButton(teleportPage, "📍 Teleport to Selected", function()
+    FishingSystem:Notify("Teleporting to: " .. teleDropdown.Text)
+end, yPosTele)
 
-yPos = yPos + 50
+yPosTele = yPosTele + 45
 
-UIComponents:CreateButton(teleportPage, "🎣 Best Fishing Spot", function()
-    FishingSystem:ShowNotification("Teleporting to best fishing spot!")
-end, yPos)
+-- Quick teleport buttons
+local teleButtons = {
+    {"Main Island", "🏝️"},
+    {"Fishing Spot", "🎣"},
+    {"Shop", "🛒"},
+    {"Boat Dock", "⛵"}
+}
 
--- Player Utility Page
-local utilityPage = contentPages["Player Utility"]
-yPos = 0
-
-_, yPos = UIComponents:CreateSection(utilityPage, "⚡ Movement Settings", yPos)
-
-_, yPos = UIComponents:CreateSlider(utilityPage, "Walk Speed", 16, 200, 16, " studs", function(value)
-    Utility:SetWalkSpeed(value)
-end, yPos)
-
-_, yPos = UIComponents:CreateSlider(utilityPage, "Jump Power", 50, 200, 50, " power", function(value)
-    Utility:SetJumpPower(value)
-end, yPos)
-
-_, yPos = UIComponents:CreateToggle(utilityPage, "Infinite Jump", false, function(state)
-    Utility:ToggleInfiniteJump(state)
-end, yPos)
-
-_, yPos = UIComponents:CreateToggle(utilityPage, "Fly", false, function(state)
-    Utility:ToggleFly(state)
-end, yPos)
-
-_, yPos = UIComponents:CreateToggle(utilityPage, "NoClip", false, function(state)
-    Utility:ToggleNoClip(state)
-end, yPos)
-
--- Visual Features Page
-local visualPage = contentPages["Visual Features"]
-yPos = 0
-
-_, yPos = UIComponents:CreateSection(visualPage, "👁️ Visual Enhancements", yPos)
-
-_, yPos = UIComponents:CreateToggle(visualPage, "ESP Name", false, function(state)
-    Utility:ToggleESP(state)
-end, yPos)
-
-_, yPos = UIComponents:CreateToggle(visualPage, "Fishing ESP", false, function(state)
-    FishingSystem:ShowNotification("Fishing ESP: " .. (state and "ON" or "OFF"))
-end, yPos)
-
-_, yPos = UIComponents:CreateToggle(visualPage, "Water Mark", false, function(state)
-    FishingSystem:ShowNotification("Water Mark: " .. (state and "ON" or "OFF"))
-end, yPos)
-
--- Settings Page
-local settingsPage = contentPages["Settings"]
-yPos = 0
-
-_, yPos = UIComponents:CreateSection(settingsPage, "⚙️ UI Settings", yPos)
-
-_, yPos = UIComponents:CreateToggle(settingsPage, "Auto Hide UI", false, function(state)
-    FishingSystem:ShowNotification("Auto Hide UI: " .. (state and "ON" or "OFF"))
-end, yPos)
-
-_, yPos = UIComponents:CreateToggle(settingsPage, "Notifications", true, function(state)
-    FishingSystem:ShowNotification("Notifications: " .. (state and "ON" or "OFF"))
-end, yPos)
-
-UIComponents:CreateButton(settingsPage, "🔄 Reset Settings", function()
-    FishingSystem:ShowNotification("Settings reset to default!")
-end, yPos)
-
--- Set canvas sizes
-for _, page in pairs(contentPages) do
-    page.CanvasSize = UDim2.new(0, 0, 0, yPos + 20)
+for i, btnData in ipairs(teleButtons) do
+    local btn = Instance.new("TextButton", teleportPage)
+    btn.Size = UDim2.new(0.5, -10, 0, 26)
+    btn.Position = UDim2.new((i-1)%2*0.5 + 0.02, 8, 0, yPosTele + math.floor((i-1)/2)*30)
+    btn.Text = btnData[2] .. " " .. btnData[1]
+    btn.TextColor3 = Color3.new(1, 1, 1)
+    btn.Font = Enum.Font.Gotham
+    btn.TextSize = 11
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    btn.BorderSizePixel = 0
+    btn.AutoButtonColor = false
+    
+    local btnCorner = Instance.new("UICorner", btn)
+    btnCorner.CornerRadius = UDim.new(0, 4)
+    
+    btn.MouseEnter:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(70, 70, 80)}):Play()
+    end)
+    
+    btn.MouseLeave:Connect(function()
+        TweenService:Create(btn, TweenInfo.new(0.1), {BackgroundColor3 = Color3.fromRGB(50, 50, 60)}):Play()
+    end)
+    
+    btn.MouseButton1Click:Connect(function()
+        FishingSystem:Notify("Teleporting to " .. btnData[1])
+    end)
 end
+
+teleportPage.CanvasSize = UDim2.new(0, 0, 0, yPosTele + 80)
+
+-- =============================================
+-- ⚡ PLAYER PAGE
+-- =============================================
+local playerPage = createPage("Player")
+local yPosPlayer = 0
+
+UIComponents:CreateSection(playerPage, "⚡ Player Settings", yPosPlayer)
+yPosPlayer = yPosPlayer + 30
+
+_, yPosPlayer = UIComponents:CreateSlider(playerPage, "Walk Speed", 16, 100, 16, "", function(value)
+    Utility:SetWalkSpeed(value)
+end, yPosPlayer)
+
+_, yPosPlayer = UIComponents:CreateSlider(playerPage, "Jump Power", 50, 150, 50, "", function(value)
+    Utility:SetJumpPower(value)
+end, yPosPlayer)
+
+_, yPosPlayer = UIComponents:CreateToggle(playerPage, "Infinite Jump", false, function(state)
+    Utility:ToggleInfiniteJump(state)
+end, yPosPlayer)
+
+_, yPosPlayer = UIComponents:CreateToggle(playerPage, "Fly", false, function(state)
+    Utility:ToggleFly(state)
+end, yPosPlayer)
+
+_, yPosPlayer = UIComponents:CreateToggle(playerPage, "NoClip", false, function(state)
+    Utility:ToggleNoClip(state)
+end, yPosPlayer)
+
+playerPage.CanvasSize = UDim2.new(0, 0, 0, yPosPlayer + 20)
+
+-- =============================================
+-- 👁️ VISUAL PAGE
+-- =============================================
+local visualPage = createPage("Visual")
+local yPosVisual = 0
+
+UIComponents:CreateSection(visualPage, "👁️ Visual Features", yPosVisual)
+yPosVisual = yPosVisual + 30
+
+_, yPosVisual = UIComponents:CreateToggle(visualPage, "ESP Name", false, function(state)
+    Utility:ToggleESP(state)
+end, yPosVisual)
+
+_, yPosVisual = UIComponents:CreateToggle(visualPage, "Show FPS", false, function(state)
+    FishingSystem:Notify("FPS Display: " .. (state and "ON" or "OFF"))
+end, yPosVisual)
+
+UIComponents:CreateButton(visualPage, "🎨 UI Theme Settings", function()
+    FishingSystem:Notify("Theme Settings")
+end, yPosVisual)
+
+visualPage.CanvasSize = UDim2.new(0, 0, 0, yPosVisual + 60)
 
 -- =============================================
 -- 🎮 MENU NAVIGATION
 -- =============================================
-local activeMenu = "Main Features"
-
 for name, btn in pairs(menuButtons) do
     btn.MouseButton1Click:Connect(function()
         -- Update active menu
-        activeMenu = name
+        currentPage = name
         
         -- Update content title
         cTitle.Text = name
@@ -920,76 +903,31 @@ for name, btn in pairs(menuButtons) do
         for menuName, menuBtn in pairs(menuButtons) do
             menuBtn.BackgroundColor3 = menuName == name and Color3.fromRGB(32, 8, 8) or Color3.fromRGB(20, 20, 20)
         end
-        
-        -- Update status
-        statusLabel.Text = "📁 " .. name
     end)
 end
 
--- Initially highlight Main Features
-menuButtons["Main Features"].BackgroundColor3 = Color3.fromRGB(32, 8, 8)
+-- Initially highlight Main
+menuButtons["Main"].BackgroundColor3 = Color3.fromRGB(32, 8, 8)
 
 -- =============================================
--- 🎮 HOTKEYS & EVENTS
+-- 🔧 CLOSE BUTTON FUNCTIONALITY
 -- =============================================
-local uiOpen = false
-
-local function toggleUI(show)
-    uiOpen = show
-    if show then
-        card.Visible = true
-        glow.Visible = true
-        container.Position = UDim2.new(0.5, -WIDTH/2, 0.5, -HEIGHT/2)
-        container.Size = UDim2.new(0, WIDTH, 0, HEIGHT)
-        container.AnchorPoint = Vector2.new(0.5,0.5)
-        container.ZIndex = 2
-        card:TweenSize(UDim2.new(0, WIDTH,0,HEIGHT), Enum.EasingDirection.Out, Enum.EasingStyle.Back, 0.28, true)
-        TweenService:Create(glow, TweenInfo.new(0.28), {ImageTransparency = 0.8}):Play()
-        statusLabel.Text = "🟢 UI Opened"
-    else
-        TweenService:Create(glow, TweenInfo.new(0.18), {ImageTransparency = 0.96}):Play()
-        card:TweenSize(UDim2.new(0, WIDTH*0.9,0,HEIGHT*0.9), Enum.EasingDirection.In, Enum.EasingStyle.Quad, 0.16, true)
-        statusLabel.Text = "⏸️ UI Minimized"
-    end
-end
-
--- Initial hide
-toggleUI(false)
-
-UserInputService.InputBegan:Connect(function(input, processed)
-    if processed then return end
-    
-    -- Toggle UI with G
-    if input.KeyCode == Enum.KeyCode.G then
-        toggleUI(not uiOpen)
-    
-    -- Hotkeys for fishing
-    elseif input.KeyCode == Enum.KeyCode.F then
-        FishingSystem:ToggleAutoFishing(not FishingSystem.Config.AutoFishing)
-    elseif input.KeyCode == Enum.KeyCode.R then
-        FishingSystem:EquipBestRod()
-    elseif input.KeyCode == Enum.KeyCode.T then
-        FishingSystem:ToggleRadar(not FishingSystem.Config.RadarEnabled)
-    elseif input.KeyCode == Enum.KeyCode.Y then
-        FishingSystem:InstantCast()
-    end
+closeButton.MouseButton1Click:Connect(function()
+    screen:Destroy()
+    FishingSystem:Notify("UI Closed")
 end)
 
 -- =============================================
 -- 🔄 UPDATE LOOPS
 -- =============================================
--- Update stats
+-- Update stats loop
 spawn(function()
     while screen.Parent do
         local stats = FishingSystem:GetStats()
-        statLabels["🎣 Total Fish"].Text = "🎣 Total Fish: " .. stats.TotalFish
-        statLabels["⚖️ Total Weight"].Text = "⚖️ Total Weight: " .. stats.TotalWeight
-        statLabels["💰 Coins"].Text = "💰 Coins: " .. stats.Coins
-        statLabels["⭐ Level"].Text = "⭐ Level: " .. stats.Level
-        
-        if FishingSystem.Config.AutoFishing then
-            statusLabel.Text = "🤖 Auto Fishing"
-        end
+        statLabels["🎣 Fish:"].Text = "🎣 Fish: " .. stats.TotalFish
+        statLabels["⚖️ Weight:"].Text = "⚖️ Weight: " .. stats.TotalWeight
+        statLabels["💰 Coins:"].Text = "💰 Coins: " .. stats.Coins
+        statLabels["⭐ Level:"].Text = "⭐ Level: " .. stats.Level
         
         task.wait(1)
     end
@@ -997,7 +935,7 @@ end)
 
 -- Anti-AFK
 local VirtualUser = game:GetService("VirtualUser")
-Players.LocalPlayer.Idled:Connect(function()
+player.Idled:Connect(function()
     VirtualUser:CaptureController()
     VirtualUser:ClickButton2(Vector2.new())
 end)
@@ -1005,22 +943,14 @@ end)
 -- =============================================
 -- 🚀 INITIALIZATION
 -- =============================================
--- Play sound
-local sound = Instance.new("Sound")
-sound.SoundId = "rbxassetid://9114821956"
-sound.Volume = 0.3
-sound.Parent = playerGui
-sound:Play()
-
 -- Welcome message
 task.delay(1, function()
-    FishingSystem:ShowNotification("🎣 Kaitun Fishing Script V4.0 Loaded!")
-    FishingSystem:ShowNotification("Press G to toggle UI | F for Auto Fish")
+    FishingSystem:Notify("🎣 Kaitun Fishing Script Loaded!")
 end)
 
-print("============================================")
+print("====================================")
 print("🎣 KAITUN FISHING SCRIPT V4.0")
-print("📁 Single File Executor")
-print("🎨 Modern UI: Hitam Matte + Merah Neon")
-print("⚡ Toggle dengan G")
-print("============================================")
+print("📏 Compact UI (700x500)")
+print("🎨 Black/Red Theme")
+print("❌ Close button only")
+print("====================================")
