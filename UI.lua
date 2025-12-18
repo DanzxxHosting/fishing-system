@@ -14,7 +14,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 
 -- CONFIG
 local WIDTH = 720
-local HEIGHT = 520
+local HEIGHT = 320
 local SIDEBAR_W = 220
 local ACCENT = Color3.fromRGB(255, 62, 62) -- neon merah
 local BG = Color3.fromRGB(12,12,12) -- hitam matte
