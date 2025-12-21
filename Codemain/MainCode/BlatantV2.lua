@@ -19,10 +19,10 @@ local fishing = {
     CurrentCycle = 0,
     TotalFish = 0,
     Settings = {
-        FishingDelay = 0.08,      -- Dikurangi dari 0.3 ke 0.05
-        CancelDelay = 0.04,       -- Dikurangi dari 0.05 ke 0.01
-        HookWaitTime = 0.04,      -- Dikurangi dari 0.30 ke 0.15
-        CastDelay = 0.29,         -- Dikurangi dari 0.07 ke 0.03
+        FishingDelay = 0.10,      -- Dikurangi dari 0.3 ke 0.05
+        CancelDelay = 0.06,       -- Dikurangi dari 0.05 ke 0.01
+        HookWaitTime = 0.05,      -- Dikurangi dari 0.30 ke 0.15
+        CastDelay = 0.35,         -- Dikurangi dari 0.07 ke 0.03
         TimeoutDelay = 0.7,       -- Dikurangi dari 1.1 ke 0.8
     },
 }
