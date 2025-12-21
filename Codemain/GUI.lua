@@ -26,7 +26,7 @@ local function new(class, props)
 end
 
 -- Load Security Loader (upload SecurityLoader.lua to GitHub first)
-local SecurityLoader = loadstring(game:HttpGet("https://raw.githubusercontent.com/akmiliadevi/Tugas_Kuliah/refs/heads/main/SecurityLoader.lua"))()
+local SecurityLoader = loadstring(game:HttpGet("https://raw.githubusercontent.com/DanzxxHosting/fishing-system/refs/heads/main/Codemain/SecurityLoader.lua"))()
 
 -- Load all modules (replace all your loadstring calls)
 local instant = SecurityLoader.LoadModule("instant")
