@@ -1,33 +1,22 @@
 local Players = game:GetService("Players")
 local ReplicatedFirst = game:GetService("ReplicatedFirst")
 local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local localPlayer = Players.LocalPlayer
 
-repeat task.wait() until localPlayer:FindFirstChild("PlayerGui")
-
--- Detect if mobile
-local isMobile = UserInputService.TouchEnabled and not UserInputService.KeyboardEnabled
-
-local function new(class, props)
-    local inst = Instance.new(class)
-    for k,v in pairs(props or {}) do inst[k] = v end
-    return inst
-end
-
-local Main = loadstring(game:HttpGet("https://fishing-system-eta.vercel.app/LynxxGui.lua"))()
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
 local loadingScreen = Instance.new("ScreenGui")
 loadingScreen.IgnoreGuiInset = true
 loadingScreen.Parent = playerGui
+
+local Main = loadstring(game:HttpGet("https://fishing-system-eta.vercel.app/LynxxGui.lua"))()
 
 local textLabel = Instance.new("TextLabel")
 textLabel.Size = UDim2.new(1, 0, 1, 0)
 textLabel.BackgroundColor3 = Color3.fromRGB(0, 20, 40)
 textLabel.Font = Enum.Font.DenkOne
 textLabel.TextColor3 = Color3.new(0.8, 0.8, 0.8)
-textLabel.Text = "LOADING"
+textLabel.Text = "Memuat"
 textLabel.TextSize = 32
 textLabel.TextTransparency = 1
 textLabel.Parent = loadingScreen
@@ -59,11 +48,7 @@ tween:Play()
 task.wait(5)  -- Paksa layar untuk muncul selama sejumlah detik minimum
 
 if not game:IsLoaded() then
-	game.Loaded:wait()
-end
-
-if not game:IsLoaded() then
-       game:LoadingScreen:wait()
+	game.Loaded:Wait()
 end
 
 loadingScreen:Main()
