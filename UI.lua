@@ -45,13 +45,14 @@ local tweenInfo = TweenInfo.new(4, Enum.EasingStyle.Linear, Enum.EasingDirection
 local tween = TweenService:Create(loadingRing, tweenInfo, {Rotation = 360})
 tween:Play()
 
-task.wait(5)  -- Paksa layar untuk muncul selama sejumlah detik minimum
+task.wait(3)  -- Paksa layar untuk muncul selama sejumlah detik minimum
 
 if not game:IsLoaded() then
-	game.Loaded:Wait()
+	game.Loaded:wait()
 end
 
 if not game:IsLoaded() then
+	task.wait(5)
 	game.Loaded:Main() 
 end
 
