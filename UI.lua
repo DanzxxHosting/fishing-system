@@ -19,15 +19,15 @@ textLabel.TextSize = 32
 textLabel.TextTransparency = 1
 textLabel.Parent = loadingScreen
 
-local TextSucces = Instance.new("TextSucces")
-TextSucces.Size = UDim2.new(1, 0, 1, 0)
-TextSucces.BackgroundColor3 = Color3.fromRGB(0, 20, 40)
-TextSucces.Font = Enum.Font.DenkOne
-TextSucces.TextColor3 = Color3.new(0.8, 0.8, 0.8)
-TextSucces.Text = "Succes"
+local textSucces = Instance.new("TextSucces")
+textSucces.Size = UDim2.new(1, 0, 1, 0)
+textSucces.BackgroundColor3 = Color3.fromRGB(0, 20, 40)
+textSucces.Font = Enum.Font.DenkOne
+textSucces.TextColor3 = Color3.new(0.8, 0.8, 0.8)
+textSucces.Text = "Succes"
 TextSucces.TextSize = 32
-TextSucces.TextTransparency = 1
-TextSucces.Parent = loadingScreen
+textSucces.TextTransparency = 1
+textSucces.Parent = loadingScreen
 
 local loadingRing = Instance.new("ImageLabel")
 loadingRing.Size = UDim2.new(0, 256, 0, 256)
@@ -47,7 +47,7 @@ local fadeTween1 = TweenService:Create(textLabel, fadeTweenInfo, {TextTransparen
 local fadeTween2 = TweenService:Create(TextSucces, fadeTweenInfo, {TextTransparency = 0})
 local fadeTween3 = TweenService:Create(loadingRing, fadeTweenInfo, {ImageTransparency = 0})
 fadeTween1:Play()
-fadeTween1:Play
+fadeTween2:Play()
 fadeTween3:Play()
 
 -- Inisiasi dan mulai tween rotasi
