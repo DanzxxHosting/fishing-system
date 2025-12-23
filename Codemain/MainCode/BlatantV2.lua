@@ -19,10 +19,10 @@ local fishing = {
     CurrentCycle = 0,
     TotalFish = 0,
     Settings = {
-        FishingDelay = 0.50,      -- Dikurangi dari 0.3 ke 0.05
-        CancelDelay = 0.35,       -- Dikurangi dari 0.05 ke 0.01
+        FishingDelay = 0.70,      -- Dikurangi dari 0.3 ke 0.05
+        CancelDelay = 0.25,       -- Dikurangi dari 0.05 ke 0.01
         HookWaitTime = 0.01,      -- Dikurangi dari 0.30 ke 0.15
-        CastDelay = 0.05,         -- Dikurangi dari 0.07 ke 0.03
+        CastDelay = 0.01,         -- Dikurangi dari 0.07 ke 0.03
         TimeoutDelay = 0.8,       -- Dikurangi dari 1.1 ke 0.8
     },
 }
@@ -40,13 +40,13 @@ RE_MinigameChanged.OnClientEvent:Connect(function(state)
         
         task.spawn(function()
             task.wait(fishing.Settings.HookWaitTime)
-            RequestFishingMinigameStarted:InvokeServer(10, 0, tick())
+            RequestFishingMinigameStarted:InvokeServer(1, 0, tick())
             RE_FishingCompleted:FireServer()
             log("✅ Hook!")
             
             task.wait(fishing.Settings.CancelDelay)
             pcall(function() RF_CancelFishingInputs:InvokeServer() end)
-            RequestFishingMinigameStarted:InvokeServer(10, 0, tick())
+            RequestFishingMinigameStarted:InvokeServer(1, 0, tick())
             
             task.wait(fishing.Settings.FishingDelay)
             if fishing.Running then fishing.Cast() end
@@ -62,7 +62,7 @@ RE_FishCaught.OnClientEvent:Connect(function(name, data)
         
         task.spawn(function()
             task.wait(fishing.Settings.CancelDelay)
-            RequestFishingMinigameStarted:InvokeServer(10, 0, tick())
+            RequestFishingMinigameStarted:InvokeServer(1, 0, tick())
             pcall(function() RF_CancelFishingInputs:InvokeServer() end)
             
             task.wait(fishing.Settings.FishingDelay)
