@@ -51,4 +51,8 @@ if not game:IsLoaded() then
 	game.Loaded:Wait()
 end
 
-loadingScreen:Main()
+if not game:IsLoaded() then
+	game.Loaded:Main() 
+end
+
+loadingScreen:Destroy()
