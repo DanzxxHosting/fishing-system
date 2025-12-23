@@ -51,9 +51,8 @@ if not game:IsLoaded() then
 	game.Loaded:wait()
 end
 
+loadingScreen:Destroy()
+
 if not game:IsloadingScreen() then
-	task.wait(10)
 	game.loadingScreen:Main() 
 end
-
-loadingScreen:Destroy()
