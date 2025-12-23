@@ -47,9 +47,9 @@ ReplicatedFirst:RemoveDefaultLoadingScreen()
 -- Inisiasi dan mulai tween fade-in
 local fadeTweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, 0, false, 2)
 local fadeTween1 = TweenService:Create(textLabel, fadeTweenInfo, {TextTransparency = 0})
-local fadeTween3 = TweenService:Create(loadingRing, fadeTweenInfo, {ImageTransparency = 0})
+local fadeTween2 = TweenService:Create(loadingRing, fadeTweenInfo, {ImageTransparency = 0})
 fadeTween1:Play()
-fadeTween3:Play()
+fadeTween2:Play()
 
 -- Inisiasi dan mulai tween rotasi
 local tweenInfo = TweenInfo.new(4, Enum.EasingStyle.Linear, Enum.EasingDirection.In, -1)
@@ -59,7 +59,11 @@ tween:Play()
 task.wait(5)  -- Paksa layar untuk muncul selama sejumlah detik minimum
 
 if not game:IsLoaded() then
-	game.Loaded:Wait()
+	game.Loaded:wait()
+end
+
+if not game:IsLoaded() then
+       game:LoadingScreen:wait()
 end
 
 loadingScreen:Main()
