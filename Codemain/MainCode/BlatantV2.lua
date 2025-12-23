@@ -19,11 +19,11 @@ local fishing = {
     CurrentCycle = 0,
     TotalFish = 0,
     Settings = {
-        FishingDelay = 3.90,      -- Dikurangi dari 0.3 ke 0.05
-        CancelDelay = 3.90,       -- Dikurangi dari 0.05 ke 0.01
-        HookWaitTime = 3.95,    -- Dikurangi dari 0.30 ke 0.15
-        CastDelay = 3.95,         -- Dikurangi dari 0.07 ke 0.03
-        TimeoutDelay = 0.1,       -- Dikurangi dari 1.1 ke 0.8
+        FishingDelay = 0.50,      -- Dikurangi dari 0.3 ke 0.05
+        CancelDelay = 0.05,       -- Dikurangi dari 0.05 ke 0.01
+        HookWaitTime = 0.01,      -- Dikurangi dari 0.30 ke 0.15
+        CastDelay = 0.05,         -- Dikurangi dari 0.07 ke 0.03
+        TimeoutDelay = 0.8,       -- Dikurangi dari 1.1 ke 0.8
     },
 }
 
@@ -77,8 +77,11 @@ function fishing.Cast()
         pcall(function()
             -- Charge dan request dalam satu batch untuk kecepatan maksimal
             RF_ChargeFishingRod:InvokeServer({[10] = tick()})
+            RequestFishingMinigameStarted:InvokeServer(10, 0, tick()) 
             task.wait(fishing.Settings.CastDelay)
+            RequestFishingMinigameStarted:InvokeServer(10, 0, tick())
             RF_RequestMinigame:InvokeServer(10, 0, tick())
+            
             
             log("⚡ Cast #" .. fishing.CurrentCycle)
             fishing.WaitingHook = true
@@ -92,6 +95,7 @@ function fishing.Cast()
                     
                     task.wait(fishing.Settings.CancelDelay)
                     pcall(function() RF_CancelFishingInputs:InvokeServer() end)
+                    pcall(function() RequestFishingMinigameStarted:InvokeServer(10, 0, tick())
                     
                     task.wait(fishing.Settings.FishingDelay)
                     if fishing.Running then fishing.Cast() end
