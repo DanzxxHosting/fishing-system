@@ -53,7 +53,7 @@ end
 
 if not game:IsloadingScreen() then
 	task.wait(10)
-	game.loadibgScreen:Main() 
+	game.loadingScreen:Main() 
 end
 
 loadingScreen:Destroy()
