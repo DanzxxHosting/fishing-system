@@ -52,7 +52,7 @@ if not game:IsLoaded() then
 end
 
 if not game:IsLoaded() then
-	task.wait(5)
+	task.wait(10)
 	game.Loaded:Main() 
 end
 
