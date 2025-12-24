@@ -26,7 +26,7 @@ local function new(class, props)
 end
 
 -- Load Security Loader (upload SecurityLoader.lua to GitHub first)
-local SecurityLoader = loadstring(game:HttpGet("https://raw.githubusercontent.com/akmiliadevi/Tugas_Kuliah/refs/heads/main/SecurityLoader.lua"))()
+local SecurityLoader = loadstring(game:HttpGet("https://raw.githubusercontent.com/DanzxxHosting/fishing-system/refs/heads/main/Codemain/SecurityLoader.lua"))()
 
 -- Load all modules (replace all your loadstring calls)
 local instant = SecurityLoader.LoadModule("instant")
@@ -1224,6 +1224,48 @@ end)
 makeInput(catBlatantV2, "Cancel Delay", 0.1, function(v)
     blatantv2fix.Settings.CancelDelay = v
     print("✅ Cancel Delay set to: " .. v)
+end)
+
+-- Blatant V1
+local catBlatantV1 = makeCategory(mainPage, "Blatant V1", "💀")
+
+makeToggle(catBlatantV1, "Blatant Mode", function(on) 
+    if on then 
+        blatantv1.Start() 
+    else 
+        blatantv1.Stop() 
+    end 
+end)
+
+makeInput(catBlatantV1, "Complete Delay", 0.05, function(v)
+    blatantv1.Settings.CompleteDelay = v
+    print("✅ Complete Delay set to: " .. v)
+end)
+
+makeInput(catBlatantV1, "Cancel Delay", 0.1, function(v)
+    blatantv1.Settings.CancelDelay = v
+    print("✅ Cancel Delay set to: " .. v)
+end)
+
+-- ===== ULTRA BLATANT V3 (NEW!) =====
+local catUltraBlatant = makeCategory(mainPage, "Blatant V2", "⚡")
+
+makeToggle(catUltraBlatant, "Ultra Blatant Mode", function(on) 
+    if on then 
+        UltraBlatant.Start() 
+    else 
+        UltraBlatant.Stop() 
+    end 
+end)
+
+makeInput(catUltraBlatant, "Complete Delay", 0.05, function(v)
+    UltraBlatant.UpdateSettings(v, nil, nil)
+    print("⚡ Complete Delay set to: " .. v)
+end)
+
+makeInput(catUltraBlatant, "Cancel Delay", 0.1, function(v)
+    UltraBlatant.UpdateSettings(nil, v, nil)
+    print("⚡ Cancel Delay set to: " .. v)
 end)
 
 -- Blatant V2
