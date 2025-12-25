@@ -27,8 +27,8 @@ UltraBlatant.Stats = {
 
 -- Settings (sesuai dengan pattern GUI kamu)
 UltraBlatant.Settings = {
-    CompleteDelay = 0.0001,    -- Delay sebelum complete
-    CancelDelay = 0.0001     -- Delay setelah complete sebelum cancel
+    CompleteDelay = 0.001,    -- Delay sebelum complete
+    CancelDelay = 0.001       -- Delay setelah complete sebelum cancel
 }
 
 ----------------------------------------------------------------

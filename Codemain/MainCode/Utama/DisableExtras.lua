@@ -39,7 +39,6 @@ end
 -- =========================
 function module.StartSmallNotification()
     if activeSmallNotif then return end
-    StartSmallNotification = 5.1
     activeSmallNotif = true
 
     -- Loop setiap frame
