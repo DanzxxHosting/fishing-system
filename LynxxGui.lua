@@ -29,12 +29,8 @@ end
 local SecurityLoader = loadstring(game:HttpGet("https://raw.githubusercontent.com/DanzxxHosting/fishing-system/refs/heads/main/Codemain/SecurityLoader.lua"))()
 
 -- Load all modules (replace all your loadstring calls)
-local instant = SecurityLoader.LoadModule("instant")
-local instant2 = SecurityLoader.LoadModule("instant2")
 local blatantv1 = SecurityLoader.LoadModule("blatantv1")
-local UltraBlatant = SecurityLoader.LoadModule("UltraBlatant")
 local blatantv2 = SecurityLoader.LoadModule("blatantv2")
-local blatantv2fix = SecurityLoader.LoadModule("blatantv2fix")
 local NoFishingAnimation = SecurityLoader.LoadModule("NoFishingAnimation")
 local LockPosition = SecurityLoader.LoadModule("LockPosition")
 local AutoEquipRod = SecurityLoader.LoadModule("AutoEquipRod")
@@ -215,7 +211,7 @@ new("UIStroke",{
 -- Title with glow effect
 local titleLabel = new("TextLabel",{
     Parent=scriptHeader,
-    Text="LynX",
+    Text="NeonX",
     Size=UDim2.new(0, 80, 1, 0),
     Position=UDim2.new(0, 15, 0, 0),
     BackgroundTransparency=1,
@@ -231,7 +227,7 @@ local titleLabel = new("TextLabel",{
 -- Title glow effect
 local titleGlow = new("TextLabel",{
     Parent=scriptHeader,
-    Text="LynX",
+    Text="NeonX",
     Size=titleLabel.Size,
     Position=titleLabel.Position,
     BackgroundTransparency=1,
@@ -506,10 +502,7 @@ end
 
 local mainPage = createPage("Main")
 local teleportPage = createPage("Teleport")
-local questPage = createPage("Quest")
 local shopPage = createPage("Shop")
-local webhookPage = createPage("Webhook")
-local cameraViewPage = createPage("CameraView")
 local settingsPage = createPage("Settings")
 local infoPage = createPage("Info")
 mainPage.Visible = true
@@ -1134,29 +1127,51 @@ end
 
 -- ==== MAIN PAGE ====
 
-local catBlatantV2 = makeCategory(mainPage, "Blatant Tester", "🎯")
+local catBlatantV1 = makeCategory(mainPage, "Blatant Tester", "🎯")
 
 -- Toggle
-makeToggle(catBlatantV2, "Blatant Tester", function(on) 
+makeToggle(catBlatantV1, "Blatant Tester", function(on) 
     if on then 
-        blatantv2fix.Start() 
+        blatantv1.Start() 
     else 
-        blatantv2fix.Stop() 
+        blatantv1.Stop() 
     end 
 end)
 
 -- Complete Delay Input
-makeInput(catBlatantV2, "Complete Delay", 0.5, function(v)
-    blatantv2fix.Settings.CompleteDelay = v
+makeInput(catBlatantV1, "Complete Delay", 0.5, function(v)
+    blatantv1.Settings.CompleteDelay = v
+    print("✅ Complete Delay set to: " .. v)
+end)
+
+-- Cancel Delay Input
+makeInput(catBlatantV1, "Cancel Delay", 0.1, function(v)
+    blatantv1.Settings.CancelDelay = v
+    print("✅ Cancel Delay set to: " .. v)
+end)
+
+local catBlatantV2 = makeCategory(mainPage, "Blatant V1", "🎯")
+
+-- Toggle
+makeToggle(catBlatantV2, "Blatant V1", function(on) 
+    if on then 
+        blatantv2.Start() 
+    else 
+        blatantv2.Stop() 
+    end 
+end)
+
+-- Complete Delay Input
+makeInput(catBlatantV1, "Complete Delay", 0.5, function(v)
+    blatantv2.Settings.CompleteDelay = v
     print("✅ Complete Delay set to: " .. v)
 end)
 
 -- Cancel Delay Input
 makeInput(catBlatantV2, "Cancel Delay", 0.1, function(v)
-    blatantv2fix.Settings.CancelDelay = v
+    blatantv2.Settings.CancelDelay = v
     print("✅ Cancel Delay set to: " .. v)
 end)
-
 
 -- Support Features
 local catSupport = makeCategory(mainPage, "Support Features", "🛠️")
