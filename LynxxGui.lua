@@ -46,21 +46,15 @@ local WalkOnWater = SecurityLoader.LoadModule("WalkOnWater")
 local TeleportModule = SecurityLoader.LoadModule("TeleportModule")
 local TeleportToPlayer = SecurityLoader.LoadModule("TeleportToPlayer")
 local SavedLocation = SecurityLoader.LoadModule("SavedLocation")
-local AutoQuestModule = SecurityLoader.LoadModule("AutoQuestModule")
-local AutoTemple = SecurityLoader.LoadModule("AutoTemple")
-local TempleDataReader = SecurityLoader.LoadModule("TempleDataReader")
 local AutoSell = SecurityLoader.LoadModule("AutoSell")
 local AutoSellTimer = SecurityLoader.LoadModule("AutoSellTimer")
 local MerchantSystem = SecurityLoader.LoadModule("MerchantSystem")
 local RemoteBuyer = SecurityLoader.LoadModule("RemoteBuyer")
-local FreecamModule = SecurityLoader.LoadModule("FreecamModule")
-local UnlimitedZoomModule = SecurityLoader.LoadModule("UnlimitedZoomModule")
 local AntiAFK = SecurityLoader.LoadModule("AntiAFK")
 local UnlockFPS = SecurityLoader.LoadModule("UnlockFPS")
 local FPSBooster = SecurityLoader.LoadModule("FPSBooster")
 local AutoBuyWeather = SecurityLoader.LoadModule("AutoBuyWeather")
 local Notify = SecurityLoader.LoadModule("Notify")
-local GoodPerfectionStable = SecurityLoader.LoadModule("GoodPerfectionStable")
 
 -- Continue with rest of your GUI code...
 print("✅ All modules loaded securely!")
@@ -90,7 +84,7 @@ local colors = {
 }
 
 -- Compact Window Size
-local windowSize = UDim2.new(0, 420, 0, 280)
+local windowSize = UDim2.new(0, 420, 0, 380)
 local minWindowSize = Vector2.new(380, 250)
 local maxWindowSize = Vector2.new(550, 400)
 
@@ -648,14 +642,12 @@ end
 
 local btnMain = createNavButton("Dashboard", "🏠", "Main", 1)
 local btnTeleport = createNavButton("Teleport", "🌍", "Teleport", 2)
-local btnQuest = createNavButton("Quest", "📜", "Quest", 3)
 local btnShop = createNavButton("Shop", "🛒", "Shop", 3)
 local btnSettings = createNavButton("Settings", "⚙️", "Settings", 4)
 local btnInfo = createNavButton("About", "ℹ️", "Info", 5)
 
 btnMain.MouseButton1Click:Connect(function() switchPage("Main", "Main Dashboard") end)
 btnTeleport.MouseButton1Click:Connect(function() switchPage("Teleport", "Teleport System") end)
-btnQuest.MouseButton1Click:Connect(function() switchPage("Quest", "Auto Quest") end)
 btnShop.MouseButton1Click:Connect(function() switchPage("Shop", "Shop Features") end)
 btnSettings.MouseButton1Click:Connect(function() switchPage("Settings", "Settings") end)
 btnInfo.MouseButton1Click:Connect(function() switchPage("Info", "About Neon") end)
