@@ -84,7 +84,7 @@ local colors = {
 }
 
 -- Compact Window Size
-local windowSize = UDim2.new(0, 420, 0, 380)
+local windowSize = UDim2.new(0, 520, 0, 280)
 local minWindowSize = Vector2.new(380, 250)
 local maxWindowSize = Vector2.new(550, 400)
 
