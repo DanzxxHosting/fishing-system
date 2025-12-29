@@ -94,7 +94,7 @@ spawn(function()
         end)
         
         -- ADAPTIVE DELAY: Mulai cepat, turunkan jika error
-        local currentDelay = 0.05 -- 20 fish per second default
+        local currentDelay = 0.95 -- 20 fish per second default
         
         -- Deteksi rate limit (jika ada error)
         local success, errorMsg = pcall(function()
